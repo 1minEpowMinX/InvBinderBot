@@ -3,6 +3,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
+from config.config import Config, load_config
 from middlewares.authorization_middleware import AuthMiddleware
 from middlewares.logging_middleware import LoggingMiddleware
 from routers import (
@@ -11,7 +12,7 @@ from routers import (
     # admin,
     public,
 )
-from config.config import Config, load_config
+from services.command import assign_role_commands
 from utils.auth_manager import AuthManager
 from utils.logger import setup_logger
 
@@ -46,6 +47,10 @@ async def main() -> None:
     dp.include_router(access.router)
     dp.include_router(callbacks.router)
     # dp.include_router(admin.router)
+
+    # Register commands for each user based on their role
+    logger.info("Assigning role-based commands")
+    await assign_role_commands(bot, auth_manager)
 
     # Drops webhook if it exists and switches to getUpdates
     # If there were updates while the bot was off, they will be processed

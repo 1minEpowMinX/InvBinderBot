@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 
 class AuthManager:
@@ -48,7 +49,9 @@ class AuthManager:
             None
         """
         with open(self.path, "w", encoding="utf-8") as f:
-            json.dump({"users": list(self._users.values())}, f, indent=2)
+            json.dump(
+                {"users": list(self._users.values())}, f, ensure_ascii=False, indent=2
+            )
 
     def is_authorized(self, user_id: int) -> bool:
         """
@@ -77,7 +80,7 @@ class AuthManager:
     def add_user(
         self,
         user_id: int,
-        added_by: int,
+        added_by: Optional[int],
         full_name: str = "",
         role: str = "user",
         notes: str = "",
@@ -87,7 +90,7 @@ class AuthManager:
 
         Args:
             user_id (int): The ID of the user to add.
-            added_by (int | None): ID of the user who adds (None if creator).
+            added_by (Optional[int]): ID of the user who adds (None if creator).
             full_name (str): Full name of the user.
             role (str): Role assigned to the user.
             notes (str): Optional notes or comment.
@@ -127,7 +130,7 @@ class AuthManager:
             return True
         return False
 
-    def list_users(self) -> dict[int, dict]:
+    def get_list_users(self) -> dict[int, dict]:
         """
         Return a list of all authorized users.
 
@@ -144,6 +147,6 @@ class AuthManager:
             user_id (int): The ID of the user whose role is to be retrieved.
 
         Returns:
-            str: The role of the user, or "readonly" if the user is not found.
+            str: The role of the user, or "viewer" if the user is not found.
         """
         return self._users.get(user_id, {}).get("role", "viewer")

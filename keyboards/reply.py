@@ -9,7 +9,6 @@ MENU_TEMPLATE = {
     ],
     "user": [
         ["📥 Добавить MAC", "📤 Показать новые MAC"],
-        ["📄 Список пользователей"],
     ],
     "viewer": [
         ["🔑 Запросить доступ"],
@@ -28,6 +27,7 @@ def get_menu_by_role(role: str) -> ReplyKeyboardMarkup:
         ReplyKeyboardMarkup: Keyboard markup for the specified role.
     """
     keyboard_rows = MENU_TEMPLATE.get(role, [])
+
     return ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text=btn) for btn in row] for row in keyboard_rows],
         resize_keyboard=True,

@@ -16,8 +16,10 @@ async def request_access_handler(
     user_id = user.id  # type: ignore
     full_name = user.full_name  # type: ignore
 
+    logger.info(f"User {full_name} ({user_id}) requested access to the bot.")
+
     admin_ids = [
-        uid for uid, info in auth.list_users().items() if info.get("role") == "admin"
+        uid for uid in auth.get_list_users().keys() if auth.get_role(uid) == "admin"
     ]
 
     if not admin_ids:

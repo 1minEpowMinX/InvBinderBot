@@ -31,7 +31,7 @@ class AuthMiddleware(BaseMiddleware):
 
         data["logger"].info(f"User {user.full_name} ({user.id}) has role: {role}")
 
-        # Add to data context everything needed for the handler
+        # Add to data context everything needed for further use in handlers
         data["auth"] = self.auth
         data["role"] = role
         data["keyboard"] = get_menu_by_role(role)

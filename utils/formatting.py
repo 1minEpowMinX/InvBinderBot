@@ -1,4 +1,12 @@
+from logging import Logger
 from typing import Any
+
+from utils.parser import (
+    extract_new_macs,
+    LOG_FILE,
+    PROCESSED_MACS_FILE,
+    FRESH_LIMIT_MINUTES,
+)
 
 
 def format_user_entry(
@@ -27,3 +35,26 @@ def format_user_entry(
         f"{prefix}<b>{name}</b> (ID: <code>{user_id}</code>) — "
         f"роль: <code>{role}</code>{note_part}\n"
     )
+
+
+def safe_get_new_macs_text(logger: Logger) -> tuple[list[str] | None, str]:
+    try:
+        mac_list, text = format_new_macs_text(
+            LOG_FILE, PROCESSED_MACS_FILE, FRESH_LIMIT_MINUTES
+        )
+        return mac_list, text
+    except FileNotFoundError:
+        logger.error(
+            f"One of the required files not found: {LOG_FILE} or {PROCESSED_MACS_FILE}."
+        )
+        return None, "🚫 Один из требуемых файлов не найден. Попробуйте позже."
+
+
+def format_new_macs_text(log_file, processed_file, fresh_limit_minutes):
+    mac_list = extract_new_macs(log_file, processed_file, fresh_limit_minutes)
+
+    if not mac_list:
+        return None, "🚫 Новых MAC-адресов не найдено."
+
+    text = "\n".join(f"{i+1}. {mac}" for i, mac in enumerate(mac_list))
+    return mac_list, text

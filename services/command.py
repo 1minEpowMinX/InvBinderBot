@@ -15,14 +15,22 @@ async def assign_role_commands(bot: Bot, auth: AuthManager):
         role = auth.get_role(user_id)
         commands = [BotCommand(command="start", description="Запустить бота")]
 
-        if role == "admin":
-            commands += [
-                BotCommand(command="users", description="Список пользователей"),
-                BotCommand(command="add", description="Добавить пользователя"),
-            ]
-        elif role == "user":
+        if role != "viewer":
             commands += [
                 BotCommand(command="help", description="Справка по боту"),
+                BotCommand(
+                    command="bind_inv_to_mac", description="Привязать Inv к MAC"
+                ),
+                BotCommand(command="show_new_macs", description="Показать новые MAC"),
+            ]
+
+        if role == "admin":
+            commands += [
+                BotCommand(command="delete_user", description="Удалить пользователя"),
+                BotCommand(command="user_list", description="Список пользователей"),
+                BotCommand(
+                    command="reload_users", description="Обновить пользователей"
+                ),
             ]
 
         await bot.set_my_commands(commands, scope=BotCommandScopeChat(chat_id=user_id))

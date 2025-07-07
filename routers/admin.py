@@ -12,10 +12,20 @@ router = Router()
 
 @router.message(Command("reload_users"))
 async def reload_users_handler(message: Message, role: str, auth: AuthManager):
+    """
+    Reloads the list of users from the file.
+    This command is restricted to admin users only.
+
+    Args:
+        message (Message): The incoming message that triggered the command.
+        role (str): The role of the user (should be 'admin' for this command).
+        auth (AuthManager): The authorization manager instance to handle user roles.
+    """
     if role != "admin":
         await message.answer("⛔ У вас нет прав на обновление пользователей.")
         return
     auth.reload()
+
     await message.answer("🔄 Список пользователей обновлён из файла.")
 
 
@@ -23,6 +33,16 @@ async def reload_users_handler(message: Message, role: str, auth: AuthManager):
 async def delete_user_prompt(
     message: Message, auth: AuthManager, role: str, logger: Logger
 ):
+    """
+    Prompts the admin to delete a user.
+    This function lists all users and provides an option to delete them.
+
+    Args:
+        message (Message): The incoming message that triggered the command.
+        auth (AuthManager): The authorization manager instance to handle user roles.
+        role (str): The role of the user (should be 'admin' for this command).
+        logger (Logger): The logger instance for logging events.
+    """
     if role != "admin":
         logger.warning(
             f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access delete user without permission."  # type: ignore
@@ -51,6 +71,17 @@ async def delete_user_command(
     auth: AuthManager,
     logger: Logger,
 ):
+    """
+    Deletes a user by their ID.
+    This command is restricted to admin users only.
+
+    Args:
+        message (Message): The incoming message that triggered the command.
+        command (CommandObject): The command object containing the command arguments.
+        role (str): The role of the user (should be 'admin' for this command).
+        auth (AuthManager): The authorization manager instance to handle user roles.
+        logger (Logger): The logger instance for logging events.
+    """
     if role != "admin":
         await message.answer("⛔ У вас нет прав на удаление пользователей.")
         return
@@ -76,6 +107,16 @@ async def delete_user_command(
 async def list_users_handler(
     message: Message, role: str, auth: AuthManager, logger: Logger
 ):
+    """
+    Lists all registered users.
+    This command is restricted to admin users only.
+
+    Args:
+        message (Message): The incoming message that triggered the command.
+        role (str): The role of the user (should be 'admin' for this command).
+        auth (AuthManager): The authorization manager instance to handle user roles.
+        logger (Logger): The logger instance for logging events.
+    """
     if role != "admin":
         logger.warning(
             f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access user list without permission."  # type: ignore

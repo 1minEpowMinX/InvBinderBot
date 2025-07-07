@@ -8,9 +8,10 @@ from middlewares.authorization_middleware import AuthMiddleware
 from middlewares.logging_middleware import LoggingMiddleware
 from routers import (
     access,
+    admin,
     callbacks,
-    # admin,
     public,
+    user,
 )
 from services.command import assign_role_commands
 from utils.auth_manager import AuthManager
@@ -46,7 +47,8 @@ async def main() -> None:
     dp.include_router(public.router)
     dp.include_router(access.router)
     dp.include_router(callbacks.router)
-    # dp.include_router(admin.router)
+    dp.include_router(user.router)
+    dp.include_router(admin.router)
 
     # Register commands for each user based on their role
     logger.info("Assigning role-based commands")

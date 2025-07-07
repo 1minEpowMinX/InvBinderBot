@@ -1,6 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from aiogram import Bot
+from logging import Logger
 
 from keyboards.reply import get_menu_by_role
 from utils.auth_manager import AuthManager
@@ -9,12 +10,14 @@ router = Router()
 
 
 @router.callback_query(F.data.startswith("approve:"))
-async def approve_user_callback(callback: CallbackQuery, auth: AuthManager, bot: Bot):
+async def approve_user_callback(
+    callback: CallbackQuery, role: str, auth: AuthManager, bot: Bot
+):
     admin_id = callback.from_user.id
     data = callback.data.split(":")  # type: ignore
     user_id = int(data[1])  # Retrieve user ID from callback data
 
-    if not auth.is_admin(admin_id):
+    if role != "admin":
         await callback.answer(
             "⛔ У вас нет прав для выполнения действия", show_alert=True
         )
@@ -43,7 +46,7 @@ async def approve_user_callback(callback: CallbackQuery, auth: AuthManager, bot:
         )
         await bot.send_message(
             chat_id=user_id,
-            text="🎉 Вам предоставлен доступ к боту!",
+            text="🔓 Вам предоставлен доступ к боту. Приятного использования!",
             reply_markup=get_menu_by_role("user"),
         )
     else:
@@ -62,3 +65,43 @@ async def deny_user_callback(callback: CallbackQuery, bot: Bot):
         chat_id=user_id,
         text="🚫 Ваша заявка на доступ была отклонена.",
     )
+
+
+@router.callback_query(F.data.startswith("delete:"))
+async def delete_user_callback(
+    callback: CallbackQuery, bot: Bot, auth: AuthManager, logger: Logger
+):
+    admin_id = callback.from_user.id
+    if not auth.is_admin(admin_id):
+        await callback.answer(
+            "⛔ У вас нет прав для выполнения действия", show_alert=True
+        )
+        return
+
+    user_id = int(callback.data.split(":")[1])  # type: ignore
+
+    # Check if the admin is trying to delete themselves and if they are the only admin
+    if (
+        user_id == admin_id
+        and sum(
+            1 for uid in auth.get_list_users().keys() if auth.get_role(uid) == "admin"
+        )
+        == 1
+    ):
+        await callback.answer(
+            "⛔ Вы — единственный администратор. Удаление доступно после передачи прав либо через команду /delete_user.",
+            show_alert=True,
+        )
+        return
+
+    if auth.remove_user(user_id):
+        await bot.edit_message_text(
+            text="✅ Пользователь удалён.",
+            chat_id=callback.message.chat.id,  # type: ignore
+            message_id=callback.message.message_id,  # type: ignore
+        )
+        logger.info(
+            f"Admin {callback.from_user.full_name} ({admin_id}) deleted user {user_id}"
+        )
+    else:
+        await callback.answer("❌ Пользователь не найден.", show_alert=True)

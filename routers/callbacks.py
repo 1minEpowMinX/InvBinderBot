@@ -13,6 +13,15 @@ router = Router()
 async def approve_user_callback(
     callback: CallbackQuery, role: str, auth: AuthManager, bot: Bot
 ):
+    """
+    Handles the callback for approving a user request.
+
+    This function checks if the user has admin rights, retrieves the user ID from the callback data,
+    and adds the user to the authorization system.
+
+    Args:
+        callback (CallbackQuery): The callback query object containing user interaction data.
+    """
     admin_id = callback.from_user.id
     data = callback.data.split(":")  # type: ignore
     user_id = int(data[1])  # Retrieve user ID from callback data
@@ -55,6 +64,15 @@ async def approve_user_callback(
 
 @router.callback_query(F.data.startswith("deny:"))
 async def deny_user_callback(callback: CallbackQuery, bot: Bot):
+    """
+    Handles the callback for denying a user request.
+
+    This function retrieves the user ID from the callback data and sends a denial message to the user.
+
+    Args:
+        callback (CallbackQuery): The callback query object containing user interaction data.
+        bot (Bot): The bot instance to send messages.
+    """
     user_id = int(callback.data.split(":")[1])  # type: ignore
     await bot.edit_message_text(
         text="❌ Заявка отклонена.",
@@ -71,6 +89,18 @@ async def deny_user_callback(callback: CallbackQuery, bot: Bot):
 async def delete_user_callback(
     callback: CallbackQuery, bot: Bot, auth: AuthManager, logger: Logger
 ):
+    """
+    Handles the callback for deleting a user.
+
+    This function checks if the user has admin rights, retrieves the user ID from the callback data,
+    and removes the user from the authorization system.
+
+    Args:
+        callback (CallbackQuery): The callback query object containing user interaction data.
+        bot (Bot): The bot instance to send messages.
+        auth (AuthManager): The authorization manager instance to handle user roles.
+        logger (Logger): The logger instance for logging events.
+    """
     admin_id = callback.from_user.id
     if not auth.is_admin(admin_id):
         await callback.answer(

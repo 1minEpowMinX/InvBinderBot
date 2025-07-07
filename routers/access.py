@@ -12,6 +12,18 @@ router = Router()
 async def request_access_handler(
     message: Message, auth: AuthManager, logger: Logger, bot
 ):
+    """
+    Handles the request for access to the bot by a user.
+
+    This function retrieves the user information from the message,
+    checks for available admins, and sends a request message to them.
+
+    Args:
+        message (Message): The incoming message that triggered the request.
+        auth (AuthManager): The authorization manager instance to handle user roles.
+        logger (Logger): The logger instance for logging events.
+        bot: The bot instance to send messages.
+    """
     user = message.from_user  # type: ignore
     user_id = user.id  # type: ignore
     full_name = user.full_name  # type: ignore

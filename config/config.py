@@ -8,22 +8,22 @@ class TgBot:
     token: str  # Token for accessing the Telegram bot
 
 
-@dataclass
-class Paths:
-    log_file: str
-    processed_macs: str
-    new_macs: str
+# @dataclass
+# class Paths:
+#     log_file: str
+#     processed_macs: str
+#     new_macs: str
 
 
 @dataclass
 class Config:
     """
     Configuration class for the application.
-    Contains settings for the Telegram bot and file paths.
+    Contains settings for the Telegram bot.
     """
 
     tg_bot: TgBot
-    paths: Paths
+    # paths: Paths Reserved for future use, currently not implemented
 
 
 def load_config(path: Optional[str] = None) -> Config:
@@ -40,11 +40,4 @@ def load_config(path: Optional[str] = None) -> Config:
     env: Env = Env()
     env.read_env(path)
 
-    return Config(
-        tg_bot=TgBot(token=env.str("BOT_TOKEN")),
-        paths=Paths(
-            log_file=env.str("LOG_FILE_PATH"),
-            processed_macs=env.str("PROCESSED_MACS_FILE"),
-            new_macs=env.str("NEW_MACS_FILE"),
-        ),
-    )
+    return Config(tg_bot=TgBot(token=env.str("BOT_TOKEN")))

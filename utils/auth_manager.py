@@ -53,6 +53,10 @@ class AuthManager:
                 {"users": list(self._users.values())}, f, ensure_ascii=False, indent=2
             )
 
+    def reload(self) -> None:
+        """Reload the users list from the JSON file."""
+        self._users = self._load()
+
     def is_authorized(self, user_id: int) -> bool:
         """
         Check if a user is authorized.

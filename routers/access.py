@@ -26,7 +26,7 @@ async def request_access_handler(
         logger.warning(
             f"User {user_id} ({full_name}) attempted to request access, but no admins found."
         )
-        await message.answer("Не удалось найти администраторов. Попробуйте позже.")
+        await message.answer("❗ Не удалось найти администраторов. Попробуйте позже.")
         return
 
     markup = access_request_markup(user_id)

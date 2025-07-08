@@ -47,8 +47,8 @@ async def main() -> None:
     dp.include_router(public.router)
     dp.include_router(access.router)
     dp.include_router(callbacks.router)
-    dp.include_router(user.router)
     dp.include_router(admin.router)
+    dp.include_router(user.router)
 
     # Register commands for each user based on their role
     logger.info("Assigning role-based commands")

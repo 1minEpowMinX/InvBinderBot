@@ -6,7 +6,7 @@ from pathlib import Path
 
 LOG_FILE = Path(getenv("LOG_FILE_PATH", "logs/dhcpd.log"))
 PROCESSED_MACS_FILE = Path(getenv("PROCESSED_MACS_FILE", "data/MACs.csv"))
-FRESH_LIMIT_MINUTES = float(getenv("LOG_FILE_PATH", 60))
+FRESH_LIMIT_MINUTES = float(getenv("FRESH_LIMIT_MINUTES", 60))
 
 
 def read_processed_macs(processed_macs_file: Path) -> set[str]:

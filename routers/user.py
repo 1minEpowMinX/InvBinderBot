@@ -4,6 +4,8 @@ from aiogram.types import Message
 from logging import Logger
 
 from utils.formatting import safe_get_new_macs_text
+from utils.parser import PROCESSED_MACS_FILE
+
 
 router = Router()
 
@@ -87,7 +89,8 @@ async def handle_inventory_reply(message: Message, logger: Logger):
         return
 
     rows = [
-        {"MACAddress": mac, "Inv": inv.strip()} for mac, inv in zip(mac_list, inv_lines)
+        {"MACAddress": mac, "ComputerName": inv.strip()}
+        for mac, inv in zip(mac_list, inv_lines)
     ]
 
     try:

@@ -94,10 +94,10 @@ class AuthManager:
 
         Args:
             user_id (int): The ID of the user to add.
-            added_by (Optional[int]): ID of the user who adds (None if creator).
-            full_name (str): Full name of the user.
-            role (str): Role assigned to the user.
-            notes (str): Optional notes or comment.
+            full_name (str): The full name of the user. Defaults to an empty string.
+            role (str): The role of the user. Defaults to "user". Other roles can be "admin" or "viewer".
+            added_by (Optional[int]): The ID of the user who is adding this user.
+            notes (str): Additional notes about the user. Defaults to an empty string.
 
         Returns:
             bool: True if user was added, False if already exists.

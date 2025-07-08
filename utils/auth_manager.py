@@ -84,9 +84,9 @@ class AuthManager:
     def add_user(
         self,
         user_id: int,
-        added_by: Optional[int],
         full_name: str = "",
         role: str = "user",
+        added_by: Optional[int] = None,
         notes: str = "",
     ) -> bool:
         """

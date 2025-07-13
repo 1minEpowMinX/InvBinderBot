@@ -2,6 +2,8 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.fsm.storage.redis import RedisStorage
+from redis.asyncio import Redis
 
 from config.config import Config, load_config
 from middlewares.authorization_middleware import AuthMiddleware
@@ -28,11 +30,21 @@ async def main() -> None:
     logger.info("Starting bot")
     config: Config = load_config()
 
+    logger.info("Loading Redis storage")
+    redis = Redis(host="localhost", port=6379)
+    storage = RedisStorage(redis)
+
+    if await redis.ping():
+        logger.info("Redis storage is connected successfully")
+    else:
+        logger.error("Failed to connect to Redis storage")
+        exit(1)
+
     bot = Bot(
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
         token=config.tg_bot.token,
     )
-    dp = Dispatcher()
+    dp = Dispatcher(storage=storage)
 
     # Register middlewares
     logger.info("Registering middlewares")
@@ -47,8 +59,8 @@ async def main() -> None:
     dp.include_router(public.router)
     dp.include_router(access.router)
     dp.include_router(callbacks.router)
-    dp.include_router(admin.router)
     dp.include_router(user.router)
+    dp.include_router(admin.router)
 
     # Register commands for each user based on their role
     logger.info("Assigning role-based commands")

@@ -45,4 +45,5 @@ def extract_new_macs(
 
             if mac not in processed_macs:
                 new_macs.append(mac)
+
     return new_macs

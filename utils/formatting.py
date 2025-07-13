@@ -1,12 +1,6 @@
-from logging import Logger
-from typing import Any
+from typing import Any, Optional
 
-from utils.parser import (
-    extract_new_macs,
-    LOG_FILE,
-    PROCESSED_MACS_FILE,
-    FRESH_LIMIT_MINUTES,
-)
+from utils.parser import extract_new_macs
 
 
 def format_user_entry(
@@ -37,20 +31,19 @@ def format_user_entry(
     )
 
 
-def safe_get_new_macs_text(logger: Logger) -> tuple[list[str] | None, str]:
-    try:
-        mac_list, text = format_new_macs_text(
-            LOG_FILE, PROCESSED_MACS_FILE, FRESH_LIMIT_MINUTES
-        )
-        return mac_list, text
-    except FileNotFoundError:
-        logger.error(
-            f"One of the required files not found: {LOG_FILE} or {PROCESSED_MACS_FILE}."
-        )
-        return None, "🚫 Один из требуемых файлов не найден. Попробуйте позже."
+def format_new_macs_text(
+    log_file, processed_file, fresh_limit_minutes
+) -> tuple[Optional[list[str]], str]:
+    """
+    Extracts new MAC addresses from the log file and formats them for display.
 
-
-def format_new_macs_text(log_file, processed_file, fresh_limit_minutes):
+    Args:
+        log_file (Path): Path to the DHCP log file.
+        processed_file (Path): Path to the file containing already processed MAC addresses.
+        fresh_limit_minutes (float): The time limit in minutes to consider a MAC address as fresh.
+    Returns:
+        tuple[Optional[list[str]], str]: A tuple containing a list of new MAC addresses and a formatted text message.
+    """
     mac_list = extract_new_macs(log_file, processed_file, fresh_limit_minutes)
 
     if not mac_list:

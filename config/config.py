@@ -16,13 +16,26 @@ class TgBot:
 
 
 @dataclass
+class RedisStorage:
+    """
+    Configuration for Redis storage.
+    """
+
+    host: str = "localhost"
+    port: int = 6379
+    db: int = 0
+    password: Optional[str] = None
+
+
+@dataclass
 class Config:
     """
     Configuration class for the application.
-    Contains settings for the Telegram bot.
+    Contains settings for the Telegram bot and Redis storage.
     """
 
     tg_bot: TgBot
+    redis: RedisStorage
     # paths: Paths Reserved for future use, currently not implemented
 
 
@@ -40,4 +53,12 @@ def load_config(path: Optional[str] = None) -> Config:
     env: Env = Env()
     env.read_env(path)
 
-    return Config(tg_bot=TgBot(token=env.str("BOT_TOKEN")))
+    return Config(
+        tg_bot=TgBot(token=env.str("BOT_TOKEN")),
+        redis=RedisStorage(
+            host=env.str("REDIS_HOST", default="localhost"),
+            port=env.int("REDIS_PORT", default=6379),
+            db=env.int("REDIS_DB", default=0),
+            password=env.str("REDIS_PASSWORD", default=None),
+        ),
+    )

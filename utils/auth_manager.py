@@ -111,7 +111,7 @@ class AuthManager:
             "full_name": full_name,
             "role": role,
             "added_by": added_by,
-            "added_at": datetime.now(timezone.utc).isoformat(),
+            "added_at": datetime.now(timezone.utc).isoformat(),  # ISO 8601 format
             "notes": notes,
         }
 

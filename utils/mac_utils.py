@@ -1,7 +1,9 @@
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from logging import Logger
-from typing import Optional
+from pathlib import Path
+from pandas import DataFrame, concat, read_csv
+from typing import Optional, Sequence
 
 from fsm.binding import BindingInventory
 from utils.formatting import format_new_macs_text
@@ -61,3 +63,34 @@ async def handle_mac_action(
             f"Найдено {len(mac_list)} MAC-адресов:\n\n{text}\n\n"
             "Отправьте список инвентарных номеров в ответ — один на строку."
         )
+
+
+def save_macs_mapping(
+    rows: Sequence[dict[str, str]],
+    file_path: Path,
+    logger: Logger,
+) -> bool:
+    """
+    Saves the MAC-to-inventory mapping to the specified CSV file.
+
+    Args:
+        rows (Sequence[dict[str, str]]): List of {"MACAddress": ..., "ComputerName": ...} entries.
+        file_path (Path): Path to the target CSV file.
+        logger (Logger): Logger for logging events.
+
+    Returns:
+        bool: True if successful, False otherwise.
+    """
+    try:
+        try:
+            df_existing = read_csv(file_path)
+        except FileNotFoundError:
+            df_existing = DataFrame()
+
+        df_result = concat([df_existing, DataFrame(rows)], ignore_index=True)
+        df_result.to_csv(file_path, index=False)
+        logger.info(f"Saved {len(rows)} MAC-to-inventory rows to {file_path}")
+        return True
+    except Exception as e:
+        logger.exception(f"Failed to save MAC mappings: {e}")
+        return False

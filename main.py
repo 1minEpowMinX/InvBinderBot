@@ -31,7 +31,12 @@ async def main() -> None:
     config: Config = load_config()
 
     logger.info("Loading Redis storage")
-    redis = Redis(host="localhost", port=6379)
+    redis = Redis(
+        host=config.redis.host,
+        port=config.redis.port,
+        db=config.redis.db,
+        password=config.redis.password,
+    )
     storage = RedisStorage(redis)
 
     if await redis.ping():

@@ -1,18 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-# Template: role → list of button rows (row = list of buttons)
-MENU_TEMPLATE = {
-    "admin": [
-        ["🔗 Привязать Inv к MAC", "🔎 Показать новые MAC"],
-        ["🗑️ Удалить пользователя", "📄 Список пользователей"],
-    ],
-    "user": [
-        ["🔗 Привязать Inv к MAC", "🔎 Показать новые MAC"],
-    ],
-    "viewer": [
-        ["🔑 Запросить доступ"],
-    ],
-}
+from lexicon.lexicon import MENU_TEMPLATE
 
 
 def get_menu_by_role(role: str) -> ReplyKeyboardMarkup:

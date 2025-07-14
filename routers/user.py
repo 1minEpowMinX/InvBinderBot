@@ -1,13 +1,13 @@
-import pandas as pd
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from logging import Logger
+from pandas import DataFrame, concat, read_csv
 
 from fsm.binding import BindingInventory
 from keyboards.confirmation import get_one_time_keyboard
 from keyboards.reply import get_menu_by_role
-from utils.mac_utils import handle_mac_action
+from utils.mac_utils import handle_mac_action, save_macs_mapping
 from utils.parser import PROCESSED_MACS_FILE
 from utils.validation import validate_inv_format
 
@@ -83,9 +83,9 @@ async def handle_inventory_reply(message: Message, state: FSMContext, logger: Lo
         )
         return
 
-    df_existing = pd.DataFrame()
+    df_existing = DataFrame()
     try:
-        df_existing = pd.read_csv(PROCESSED_MACS_FILE)
+        df_existing = read_csv(PROCESSED_MACS_FILE)
     except FileNotFoundError:
         logger.error(f"Processed MACs file {PROCESSED_MACS_FILE} not found.")
 
@@ -115,10 +115,13 @@ async def handle_inventory_reply(message: Message, state: FSMContext, logger: Lo
             reply_markup=get_one_time_keyboard(text),
         )
     else:
-        df_result = pd.concat([df_existing, pd.DataFrame(rows)], ignore_index=True)
-        df_result.to_csv(PROCESSED_MACS_FILE, index=False)
-        await state.clear()
-        await message.answer("✅ Сопоставления сохранены.")
+        if save_macs_mapping(rows, PROCESSED_MACS_FILE, logger):
+            await state.clear()
+            await message.answer("✅ Сопоставления сохранены.")
+        else:
+            await message.answer(
+                "❌ Не удалось сохранить данные. Обратитесь к администратору."
+            )
 
 
 @router.message(BindingInventory.waiting_for_confirmation, F.text == "✅ Да, сохранить")
@@ -135,21 +138,18 @@ async def confirm_save(message: Message, role: str, state: FSMContext, logger: L
     """
     data = await state.get_data()
     pending_rows = data.get("pending_rows", [])
-    try:
-        df_existing = pd.read_csv(PROCESSED_MACS_FILE)
-    except FileNotFoundError:
-        logger.error(f"Processed MACs file {PROCESSED_MACS_FILE} not found.")
-        df_existing = pd.DataFrame()
-
-    df_result = pd.concat([df_existing, pd.DataFrame(pending_rows)], ignore_index=True)
-    df_result.to_csv(PROCESSED_MACS_FILE, index=False)
 
     logger.info(
         f"User {message.from_user.full_name} ({message.from_user.id}) confirmed saving duplicated inventory numbers."  # type: ignore
     )
 
-    await state.clear()
-    await message.answer("✅ Сопоставления сохранены.", reply_markup=get_menu_by_role(role))  # type: ignore
+    if save_macs_mapping(pending_rows, PROCESSED_MACS_FILE, logger):
+        await state.clear()
+        await message.answer("✅ Сопоставления сохранены.", reply_markup=get_menu_by_role(role))  # type: ignore
+    else:
+        await message.answer(
+            "❌ Не удалось сохранить данные. Обратитесь к администратору."
+        )
 
 
 @router.message(F.text == "❌ Нет, отмена")

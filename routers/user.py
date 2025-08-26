@@ -1,35 +1,23 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
+from aiogram.filters import Command, or_f
 from aiogram.types import Message
 from logging import Logger
-from pandas import DataFrame, concat, read_csv
+from pandas import DataFrame, read_csv
 
 from fsm.binding import BindingInventory
 from keyboards.confirmation import get_one_time_keyboard
 from keyboards.reply import get_menu_by_role
+from lexicon.lexicon import get_message, get_button, get_menu_button
+from utils.mac_utils import PROCESSED_MACS_FILE, NAME_TEMPLATE
 from utils.mac_utils import handle_mac_action, save_macs_mapping
-from utils.parser import PROCESSED_MACS_FILE
 from utils.validation import validate_inv_format
 
 
 router = Router()
 
 
-@router.message(F.text == "🔎 Показать новые MAC")
-async def show_new_macs(message: Message, logger: Logger) -> None:
-    """
-    Handles the command to show new MAC addresses.
-
-    This function retrieves new MAC addresses from the log file and sends them to the user.
-
-    Args:
-        message (Message): The incoming message that triggered the command.
-        logger (Logger): The logger instance for logging events.
-    """
-    await handle_mac_action(message, logger, action="show")
-
-
-@router.message(F.text == "🔗 Привязать Inv к MAC")
+@router.message(or_f(Command("bind_inv_to_mac"), F.text == get_menu_button("bind_inv_to_mac")))  # type: ignore
 async def start_mac_binding(
     message: Message, state: FSMContext, logger: Logger
 ) -> None:
@@ -46,8 +34,24 @@ async def start_mac_binding(
     await handle_mac_action(message, logger, action="bind", state=state)
 
 
+@router.message(or_f(Command("show_new_macs"), F.text == get_menu_button("show_new_macs")))  # type: ignore
+async def show_new_macs(message: Message, logger: Logger) -> None:
+    """
+    Handles the command to show new MAC addresses.
+
+    This function retrieves new MAC addresses from the log file and sends them to the user.
+
+    Args:
+        message (Message): The incoming message that triggered the command.
+        logger (Logger): The logger instance for logging events.
+    """
+    await handle_mac_action(message, logger, action="show")
+
+
 @router.message(BindingInventory.waiting_for_inventory_numbers)
-async def handle_inventory_reply(message: Message, state: FSMContext, logger: Logger):
+async def handle_inventory_reply(
+    message: Message, role: str, state: FSMContext, logger: Logger
+):
     """
     Handles the user's reply containing inventory numbers.
 
@@ -57,6 +61,7 @@ async def handle_inventory_reply(message: Message, state: FSMContext, logger: Lo
 
     Args:
         message (Message): The incoming message containing inventory numbers.
+        role (str): The role of the user, used for determining access permissions.
         state (FSMContext): The finite state machine context for managing user sessions.
         logger (Logger): The logger instance for logging events.
 
@@ -79,7 +84,9 @@ async def handle_inventory_reply(message: Message, state: FSMContext, logger: Lo
             f"User {message.from_user.full_name} ({user_id}) provided mismatched inventory numbers and MAC addresses."  # type: ignore
         )
         await message.answer(
-            f"⚠️ Число инвентарных ({len(inv_lines)}) и MAC-адресов ({len(mac_list)}) не совпадают."
+            get_message("uncorrect_count").format(
+                inv_lines=len(inv_lines), mac_list=len(mac_list)
+            )
         )
         return
 
@@ -92,7 +99,7 @@ async def handle_inventory_reply(message: Message, state: FSMContext, logger: Lo
     duplicates: list[str] = []
     rows: list[dict[str, str]] = []
     for mac, inv in zip(mac_list, inv_lines):
-        inv = inv.strip()
+        inv = NAME_TEMPLATE + inv.strip()
         rows.append({"MACAddress": mac, "ComputerName": inv})
         if not df_existing.empty and inv in df_existing["ComputerName"].values:
             duplicates.append(inv)
@@ -105,26 +112,24 @@ async def handle_inventory_reply(message: Message, state: FSMContext, logger: Lo
         await state.set_state(BindingInventory.waiting_for_confirmation)
 
         text = [
-            "✅ Да, сохранить",
-            "❌ Нет, отмена",
+            get_button("confirm_save"),
+            get_button("cancel_save"),
         ]
         await message.answer(
-            "⚠️ Обнаружены уже существующие имена ПК:\n"
+            get_message("already_exists")[0]
             + "\n".join(f"- {inv}" for inv in duplicates)
-            + "\n\nВы уверены, что хотите сохранить эти данные?",
+            + get_message("already_exists")[1],
             reply_markup=get_one_time_keyboard(text),
         )
     else:
         if save_macs_mapping(rows, PROCESSED_MACS_FILE, logger):
             await state.clear()
-            await message.answer("✅ Сопоставления сохранены.")
+            await message.answer(get_message("save_success"), reply_markup=get_menu_by_role(role))  # type: ignore
         else:
-            await message.answer(
-                "❌ Не удалось сохранить данные. Обратитесь к администратору."
-            )
+            await message.answer(get_message("save_error"), reply_markup=get_menu_by_role(role))  # type: ignore
 
 
-@router.message(BindingInventory.waiting_for_confirmation, F.text == "✅ Да, сохранить")
+@router.message(BindingInventory.waiting_for_confirmation, F.text == get_button("confirm_save"))  # type: ignore
 async def confirm_save(message: Message, role: str, state: FSMContext, logger: Logger):
     """
     Confirms the saving of inventory numbers and MAC addresses.
@@ -145,14 +150,12 @@ async def confirm_save(message: Message, role: str, state: FSMContext, logger: L
 
     if save_macs_mapping(pending_rows, PROCESSED_MACS_FILE, logger):
         await state.clear()
-        await message.answer("✅ Сопоставления сохранены.", reply_markup=get_menu_by_role(role))  # type: ignore
+        await message.answer(get_message("save_success"), reply_markup=get_menu_by_role(role))  # type: ignore
     else:
-        await message.answer(
-            "❌ Не удалось сохранить данные. Обратитесь к администратору."
-        )
+        await message.answer(get_message("save_error"))
 
 
-@router.message(F.text == "❌ Нет, отмена")
+@router.message(F.text == get_button("cancel_save"))  # type: ignore
 async def cancel_binding(
     message: Message, role: str, state: FSMContext, logger: Logger
 ):
@@ -170,4 +173,4 @@ async def cancel_binding(
     logger.info(
         f"User {message.from_user.full_name} ({message.from_user.id}) canceled the binding duplicated inventory numbers process"  # type: ignore
     )
-    await message.answer("❌ Привязка отменена.", reply_markup=get_menu_by_role(role))  # type: ignore
+    await message.answer(get_message("bind_cancel"), reply_markup=get_menu_by_role(role))  # type: ignore

@@ -1,64 +1,94 @@
 from dataclasses import dataclass
 from environs import Env
-from os import environ
 from pathlib import Path
 from typing import Optional
+from redis.asyncio import Redis
+from aiogram.fsm.storage.redis import RedisStorage
 
 
 @dataclass
 class TgBot:
-    token: str  # Token for accessing the Telegram bot
+    """
+    Configuration for the Telegram bot.
+    """
+
+    token: str
 
 
 @dataclass
-class RedisStorage:
+class RedisConfig:
     """
-    Configuration for Redis storage.
+    Configuration for Redis.
     """
 
-    host: str = "localhost"
-    port: int = 6379
-    db: int = 0
+    host: str
+    port: int
+    db: int
     password: Optional[str] = None
+
+    def create_client(self) -> Redis:
+        """
+        Create and return a Redis client instance.
+        """
+        return Redis(
+            host=self.host,
+            port=self.port,
+            db=self.db,
+            password=self.password,
+        )
+
+    def create_storage(self) -> RedisStorage:
+        """
+        Create and return a RedisStorage instance.
+        """
+        return RedisStorage(self.create_client())
+
+
+@dataclass
+class FilesConfig:
+    """
+    Configuration for files.
+    """
+
+    log_file: Path
+    processed_macs: Path
+    fresh_limit: float
+    name_template: str
 
 
 @dataclass
 class Config:
     """
-    Configuration class for the application.
-    Contains settings for the Telegram bot and Redis storage.
+    Configuration for the bot.
     """
 
     tg_bot: TgBot
-    redis: RedisStorage
-    # paths: Paths Reserved for future use, currently not implemented
+    redis: RedisConfig
+    files: FilesConfig
 
 
 def load_config(path: Optional[Path] = None) -> Config:
     """
-    Load configuration from environment variables.
-    If a path is provided, it reads from the specified .env file.
+    Load configuration from .env file or environment variables.
 
     Args:
-        path Optional[str]: Path to the .env file. If None, defaults to the current directory.
-
-    Returns:
-        Config: An instance of the Config class populated with the environment variables.
+        path (Optional[Path]): Path to the .env file. Defaults to None, which uses the current directory.
     """
-    env: Env = Env()
+    env = Env()
     env.read_env(path)
-
-    environ["LOG_FILE"] = env.str("LOG_FILE")
-    environ["PROCESSED_MACS"] = env.str("PROCESSED_MACS")
-    environ["FRESH_LIMIT_MINUTES"] = env.str("FRESH_LIMIT_MINUTES")
-    environ["NAME_TEMPLATE"] = env.str("NAME_TEMPLATE")
 
     return Config(
         tg_bot=TgBot(token=env.str("BOT_TOKEN")),
-        redis=RedisStorage(
-            host=env.str("REDIS_HOST", default="localhost"),
-            port=env.int("REDIS_PORT", default=6379),
-            db=env.int("REDIS_DB", default=0),
-            password=env.str("REDIS_PASSWORD", default=None),
+        redis=RedisConfig(
+            host=env.str("REDIS_HOST", "localhost"),
+            port=env.int("REDIS_PORT", 6379),
+            db=env.int("REDIS_DB", 0),
+            password=env.str("REDIS_PASSWORD", None),
+        ),
+        files=FilesConfig(
+            log_file=Path(env.str("LOG_FILE", "dhcp.log")),
+            processed_macs=Path(env.str("PROCESSED_MACS", "processed_macs.csv")),
+            fresh_limit=float(env.str("FRESH_LIMIT_MINUTES", "5")),
+            name_template=env.str("NAME_TEMPLATE", "{}"),
         ),
     )

@@ -2,8 +2,6 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.fsm.storage.redis import RedisStorage
-from redis.asyncio import Redis
 
 from config.config import Config, load_config
 from middlewares.authorization_middleware import AuthMiddleware

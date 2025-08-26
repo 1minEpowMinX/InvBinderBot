@@ -3,12 +3,13 @@ from aiogram.types import Message
 from logging import Logger
 
 from keyboards.access import access_request_markup
+from lexicon.lexicon import get_message, get_menu_button
 from utils.auth_manager import AuthManager
 
 router = Router()
 
 
-@router.message(F.text == "🔑 Запросить доступ")
+@router.message(F.text == get_menu_button("request_access"))  # type: ignore
 async def request_access_handler(
     message: Message, auth: AuthManager, logger: Logger, bot
 ):
@@ -38,7 +39,7 @@ async def request_access_handler(
         logger.warning(
             f"User {user_id} ({full_name}) attempted to request access, but no admins found."
         )
-        await message.answer("❗ Не удалось найти администраторов. Попробуйте позже.")
+        await message.answer(get_message("no_admins"))
         return
 
     markup = access_request_markup(user_id)
@@ -46,9 +47,11 @@ async def request_access_handler(
     for admin_id in admin_ids:
         await bot.send_message(
             chat_id=admin_id,
-            text=f"👤 Пользователь <b>{full_name}</b> (ID: <code>{user_id}</code>) запросил доступ.",
+            text=get_message("request_access_from_user").format(
+                full_name=full_name, user_id=user_id
+            ),
             parse_mode="HTML",
             reply_markup=markup,
         )
 
-    await message.answer("📩 Заявка на доступ отправлена администраторам.")
+    await message.answer(get_message("request_access_sent"))

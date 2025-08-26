@@ -1,5 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+from lexicon.lexicon import get_button
+
 
 def access_request_markup(user_id: int) -> InlineKeyboardMarkup:
     """
@@ -15,10 +17,10 @@ def access_request_markup(user_id: int) -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="✅ Подтвердить", callback_data=f"approve:{user_id}"
+                    text=get_button("approve"), callback_data=f"approve:{user_id}"
                 ),
                 InlineKeyboardButton(
-                    text="❌ Отклонить", callback_data=f"deny:{user_id}"
+                    text=get_button("deny"), callback_data=f"deny:{user_id}"
                 ),
             ]
         ]

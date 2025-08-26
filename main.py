@@ -44,7 +44,7 @@ async def main() -> None:
     )
 
     logger.info("Initializing Dispatcher")
-    dp = Dispatcher(storage=storage)
+    dp = Dispatcher(storage=storage, config_files=config.files)
 
     # Register middlewares
     logger.info("Registering middlewares")

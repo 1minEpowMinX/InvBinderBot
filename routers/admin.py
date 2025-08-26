@@ -1,37 +1,19 @@
 from aiogram import Router, F
-from aiogram.types import Message
 from aiogram.filters import Command, CommandObject, or_f
+from aiogram.types import Message
 from logging import Logger
 
 from keyboards.delete import delete_user_markup
+from lexicon.lexicon import get_message, get_menu_button
 from utils.auth_manager import AuthManager
 from utils.formatting import format_user_entry
 
 router = Router()
 
 
-@router.message(Command("reload_users"))
-async def reload_users_handler(message: Message, role: str, auth: AuthManager):
-    """
-    Reloads the list of users from the file.
-    This command is restricted to admin users only.
-
-    Args:
-        message (Message): The incoming message that triggered the command.
-        role (str): The role of the user (should be 'admin' for this command).
-        auth (AuthManager): The authorization manager instance to handle user roles.
-    """
-    if role != "admin":
-        await message.answer("⛔ У вас нет прав на обновление пользователей.")
-        return
-    auth.reload()
-
-    await message.answer("🔄 Список пользователей обновлён из файла.")
-
-
-@router.message(F.text == "🗑️ Удалить пользователя")
+@router.message(F.text == get_menu_button("delete_user"))  # type: ignore
 async def delete_user_prompt(
-    message: Message, auth: AuthManager, role: str, logger: Logger
+    message: Message, role: str, auth: AuthManager, logger: Logger
 ):
     """
     Prompts the admin to delete a user.
@@ -47,12 +29,12 @@ async def delete_user_prompt(
         logger.warning(
             f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access delete user without permission."  # type: ignore
         )
-        await message.answer("⛔ У вас нет прав на удаление пользователей.")
+        await message.answer(get_message("no_access"))
         return
 
     users = auth.get_list_users()
     if not users:
-        await message.answer("📭 Список пользователей пуст.")
+        await message.answer(get_message("empty_users"))
         return
 
     for i, (uid, user) in enumerate(users.items(), start=1):
@@ -83,13 +65,13 @@ async def delete_user_command(
         logger (Logger): The logger instance for logging events.
     """
     if role != "admin":
-        await message.answer("⛔ У вас нет прав на удаление пользователей.")
+        await message.answer(get_message("no_access"))
         return
 
     arg = command.args
     if not arg or not arg.isdigit():
         await message.answer(
-            "❗ Укажите ID пользователя: <code>/delete_user 123456789</code>",
+            get_message("needs_id_for_delete"),
             parse_mode="HTML",
         )
         return
@@ -97,13 +79,17 @@ async def delete_user_command(
     user_id = int(arg)
 
     if auth.remove_user(user_id):
-        await message.answer(f"✅ Пользователь с ID {user_id} удалён.")
+        await message.answer(
+            get_message("user_deleted").format(user_id=user_id), parse_mode="HTML"
+        )
         logger.info(f"Admin {message.from_user.full_name} ({message.from_user.id}) deleted the user {user_id}")  # type: ignore
     else:
-        await message.answer(f"❌ Пользователь с ID {user_id} не найден.")
+        await message.answer(
+            get_message("user_not_found").format(user_id=user_id), parse_mode="HTML"
+        )
 
 
-@router.message(or_f(Command("user_list"), F.text == "📄 Список пользователей"))
+@router.message(or_f(Command("user_list"), F.text == get_menu_button("user_list")))  # type: ignore
 async def list_users_handler(
     message: Message, role: str, auth: AuthManager, logger: Logger
 ):
@@ -121,20 +107,39 @@ async def list_users_handler(
         logger.warning(
             f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access user list without permission."  # type: ignore
         )
-        await message.answer("⛔ У вас нет прав для просмотра списка пользователей.")
+        await message.answer(get_message("no_access"))
         return
 
     users = auth.get_list_users()
     if not users:
         logger.info("No registered users found.")
-        await message.answer("📭 Нет зарегистрированных пользователей.")
+        await message.answer(get_message("empty_users"))
         return
 
     logger.info(f"Admin {message.from_user.full_name} ({message.from_user.id}) requested user list.")  # type: ignore
 
-    result = "<b>📄 Список пользователей:</b>\n\n" + "\n".join(
+    result = f"<b>{get_menu_button('user_list')}:</b>\n\n" + "\n".join(  # type: ignore
         format_user_entry(uid, user, i)
         for i, (uid, user) in enumerate(users.items(), start=1)
     )
 
     await message.answer(result, parse_mode="HTML")
+
+
+@router.message(Command("reload_users"))
+async def reload_users_handler(message: Message, role: str, auth: AuthManager):
+    """
+    Reloads the list of users from the file.
+    This command is restricted to admin users only.
+
+    Args:
+        message (Message): The incoming message that triggered the command.
+        role (str): The role of the user (should be 'admin' for this command).
+        auth (AuthManager): The authorization manager instance to handle user roles.
+    """
+    if role != "admin":
+        await message.answer(get_message("no_access"))
+        return
+    auth.reload()
+
+    await message.answer(get_message("users_update"))

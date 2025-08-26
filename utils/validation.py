@@ -28,9 +28,9 @@ async def validate_inv_format(
             f"provided invalid inventory numbers: {', '.join(invalid_invs)}"
         )
         await message.answer(
-            "⚠️ Найдены инвентарные номера с неправильным форматом:\n"
+            get_message("error_inv_format")[0]
             + "\n".join(f"• {inv}" for inv in invalid_invs)
-            + "\n\nФормат должен быть <code>HB-15-12345</code> или <code>HB-15-12345M</code>. Пожалуйста, проверьте и повторите попытку.",
+            + get_message("error_inv_format")[1],
             parse_mode="HTML",
         )
         return False

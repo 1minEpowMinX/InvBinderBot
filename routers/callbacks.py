@@ -4,6 +4,7 @@ from aiogram import Bot
 from logging import Logger
 
 from keyboards.reply import get_menu_by_role
+from lexicon.lexicon import get_message
 from utils.auth_manager import AuthManager
 
 router = Router()
@@ -27,9 +28,7 @@ async def approve_user_callback(
     user_id = int(data[1])  # Retrieve user ID from callback data
 
     if role != "admin":
-        await callback.answer(
-            "⛔ У вас нет прав для выполнения действия", show_alert=True
-        )
+        await callback.answer(get_message("no_access"), show_alert=True)
         return
 
     # Retrieve user's data from get_chat method
@@ -37,7 +36,7 @@ async def approve_user_callback(
         user_chat = await bot.get_chat(user_id)
         full_name = user_chat.full_name
     except:
-        full_name = "❓ Без имени"
+        full_name = get_message("unknown_user")  # Fallback if user not found
 
     # Add user and check if the user already exists in the auth system
     if auth.add_user(
@@ -45,21 +44,23 @@ async def approve_user_callback(
         added_by=admin_id,
         full_name=full_name,
         role="user",
-        notes=f"Добавлен администратором {admin_id} ({callback.from_user.full_name})",
+        notes=get_message("note").format(admin_id=admin_id, callback=callback.from_user.full_name),  # type: ignore
     ):
         await bot.edit_message_text(
-            text=f"✅ Пользователь <b>{full_name}</b> (ID: <code>{user_id}</code>) был добавлен.",
+            text=get_message("add_user").format(full_name=full_name, user_id=user_id),
             chat_id=callback.message.chat.id,  # type: ignore
             message_id=callback.message.message_id,  # type: ignore
             parse_mode="HTML",
         )
         await bot.send_message(
             chat_id=user_id,
-            text="🔓 Вам предоставлен доступ к боту. Приятного использования!",
+            text=get_message("approve_access"),
             reply_markup=get_menu_by_role("user"),
         )
     else:
-        await callback.answer("Пользователь уже есть.", show_alert=True)
+        await callback.answer(
+            get_message("user_already_exists").format(user_id=user_id), show_alert=True
+        )
 
 
 @router.callback_query(F.data.startswith("deny:"))
@@ -75,19 +76,19 @@ async def deny_user_callback(callback: CallbackQuery, bot: Bot):
     """
     user_id = int(callback.data.split(":")[1])  # type: ignore
     await bot.edit_message_text(
-        text="❌ Заявка отклонена.",
+        text=get_message("admin_request_denied"),
         chat_id=callback.message.chat.id,  # type: ignore
         message_id=callback.message.message_id,  # type: ignore
     )
     await bot.send_message(
         chat_id=user_id,
-        text="🚫 Ваша заявка на доступ была отклонена.",
+        text=get_message("user_request_denied"),
     )
 
 
 @router.callback_query(F.data.startswith("delete:"))
 async def delete_user_callback(
-    callback: CallbackQuery, bot: Bot, auth: AuthManager, logger: Logger
+    callback: CallbackQuery, auth: AuthManager, logger: Logger, bot: Bot
 ):
     """
     Handles the callback for deleting a user.
@@ -103,9 +104,7 @@ async def delete_user_callback(
     """
     admin_id = callback.from_user.id
     if not auth.is_admin(admin_id):
-        await callback.answer(
-            "⛔ У вас нет прав для выполнения действия", show_alert=True
-        )
+        await callback.answer(get_message("no_access"), show_alert=True)
         return
 
     user_id = int(callback.data.split(":")[1])  # type: ignore
@@ -119,14 +118,14 @@ async def delete_user_callback(
         == 1
     ):
         await callback.answer(
-            "⛔ Вы — единственный администратор. Удаление доступно после передачи прав либо через команду /delete_user.",
+            get_message("only_admin"),
             show_alert=True,
         )
         return
 
     if auth.remove_user(user_id):
         await bot.edit_message_text(
-            text="✅ Пользователь удалён.",
+            text=get_message("user_deleted").format(user_id=user_id),
             chat_id=callback.message.chat.id,  # type: ignore
             message_id=callback.message.message_id,  # type: ignore
         )
@@ -134,4 +133,6 @@ async def delete_user_callback(
             f"Admin {callback.from_user.full_name} ({admin_id}) deleted user {user_id}"
         )
     else:
-        await callback.answer("❌ Пользователь не найден.", show_alert=True)
+        await callback.answer(
+            get_message("user_not_found").format(user_id=user_id), show_alert=True
+        )

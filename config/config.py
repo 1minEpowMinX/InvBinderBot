@@ -1,18 +1,13 @@
 from dataclasses import dataclass
 from environs import Env
+from os import environ
+from pathlib import Path
 from typing import Optional
 
 
 @dataclass
 class TgBot:
     token: str  # Token for accessing the Telegram bot
-
-
-# @dataclass
-# class Paths:
-#     log_file: str
-#     processed_macs: str
-#     new_macs: str
 
 
 @dataclass
@@ -39,10 +34,10 @@ class Config:
     # paths: Paths Reserved for future use, currently not implemented
 
 
-def load_config(path: Optional[str] = None) -> Config:
+def load_config(path: Optional[Path] = None) -> Config:
     """
     Load configuration from environment variables.
-        If a path is provided, it reads from the specified .env file.
+    If a path is provided, it reads from the specified .env file.
 
     Args:
         path Optional[str]: Path to the .env file. If None, defaults to the current directory.
@@ -52,6 +47,11 @@ def load_config(path: Optional[str] = None) -> Config:
     """
     env: Env = Env()
     env.read_env(path)
+
+    environ["LOG_FILE"] = env.str("LOG_FILE")
+    environ["PROCESSED_MACS"] = env.str("PROCESSED_MACS")
+    environ["FRESH_LIMIT_MINUTES"] = env.str("FRESH_LIMIT_MINUTES")
+    environ["NAME_TEMPLATE"] = env.str("NAME_TEMPLATE")
 
     return Config(
         tg_bot=TgBot(token=env.str("BOT_TOKEN")),

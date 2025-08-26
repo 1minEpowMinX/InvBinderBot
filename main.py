@@ -31,13 +31,8 @@ async def main() -> None:
     config: Config = load_config()
 
     logger.info("Loading Redis storage")
-    redis = Redis(
-        host=config.redis.host,
-        port=config.redis.port,
-        db=config.redis.db,
-        password=config.redis.password,
-    )
-    storage = RedisStorage(redis)
+    storage = config.redis.create_storage()
+    redis = storage.redis
 
     if await redis.ping():
         logger.info("Redis storage is connected successfully")
@@ -46,9 +41,11 @@ async def main() -> None:
         exit(1)
 
     bot = Bot(
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
         token=config.tg_bot.token,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
+
+    logger.info("Initializing Dispatcher")
     dp = Dispatcher(storage=storage)
 
     # Register middlewares
@@ -61,6 +58,7 @@ async def main() -> None:
     dp.callback_query.middleware(AuthMiddleware(auth_manager))
 
     # Register routers in the dispatcher
+    logger.info("Registering routers")
     dp.include_router(public.router)
     dp.include_router(access.router)
     dp.include_router(callbacks.router)

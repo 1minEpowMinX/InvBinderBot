@@ -3,6 +3,8 @@ from logging import Logger
 from re import compile, IGNORECASE
 from typing import Optional
 
+from lexicon.lexicon import get_message
+
 INV_PATTERN = compile(r"^\d{5}(?:M)?$", IGNORECASE)  # Example: 12345 or 12345M
 
 

@@ -1,6 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-from lexicon.lexicon import MENU_TEMPLATE
+from lexicon.lexicon import MENU_TEMPLATE, BUTTONS
 
 
 def get_menu_by_role(role: str) -> ReplyKeyboardMarkup:
@@ -8,14 +8,27 @@ def get_menu_by_role(role: str) -> ReplyKeyboardMarkup:
     Returns a keyboard markup based on the user's role.
 
     Args:
-        role (str): User role (e.g., "admin", "user", "readonly").
+        role (str): User role (e.g., "admin", "user", "viewer").
 
     Returns:
         ReplyKeyboardMarkup: Keyboard markup for the specified role.
     """
-    keyboard_rows = MENU_TEMPLATE.get(role, [])
+
+    role_layout = MENU_TEMPLATE.get(role, [])
+    button_labels = BUTTONS["buttons"]
+
+    keyboard = []
+    for row in role_layout:
+        keyboard.append(
+            [
+                KeyboardButton(
+                    text=button_labels.get(btn_key, f"[{btn_key}]")  # type: ignore
+                )  # fallback if btn_key not in button_labels
+                for btn_key in row
+            ]
+        )
 
     return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text=btn) for btn in row] for row in keyboard_rows],
+        keyboard=keyboard,
         resize_keyboard=True,
     )

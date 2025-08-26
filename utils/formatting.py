@@ -1,6 +1,4 @@
-from typing import Any, Optional
-
-from utils.parser import extract_new_macs
+from typing import Any
 
 
 def format_user_entry(
@@ -29,25 +27,3 @@ def format_user_entry(
         f"{prefix}<b>{name}</b> (ID: <code>{user_id}</code>) — "
         f"роль: <code>{role}</code>{note_part}\n"
     )
-
-
-def format_new_macs_text(
-    log_file, processed_file, fresh_limit_minutes
-) -> tuple[Optional[list[str]], str]:
-    """
-    Extracts new MAC addresses from the log file and formats them for display.
-
-    Args:
-        log_file (Path): Path to the DHCP log file.
-        processed_file (Path): Path to the file containing already processed MAC addresses.
-        fresh_limit_minutes (float): The time limit in minutes to consider a MAC address as fresh.
-    Returns:
-        tuple[Optional[list[str]], str]: A tuple containing a list of new MAC addresses and a formatted text message.
-    """
-    mac_list = extract_new_macs(log_file, processed_file, fresh_limit_minutes)
-
-    if not mac_list:
-        return None, "🚫 Новых MAC-адресов не найдено."
-
-    text = "\n".join(f"{i+1}. {mac}" for i, mac in enumerate(mac_list))
-    return mac_list, text

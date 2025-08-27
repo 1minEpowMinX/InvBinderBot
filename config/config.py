@@ -73,7 +73,11 @@ def load_config(path: Optional[Path] = None) -> Config:
 
     Args:
         path (Optional[Path]): Path to the .env file. Defaults to None, which uses the current directory.
+
+    Returns:
+        Config: The loaded configuration object.
     """
+
     env = Env()
     env.read_env(path)
 

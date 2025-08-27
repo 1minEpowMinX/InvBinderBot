@@ -139,7 +139,7 @@ MENU_TEMPLATE = {
         ["delete_user", "user_list"],
     ],
     "user": [
-        ["bind_mac", "show_new_macs"],
+        ["bind_inv_to_mac", "show_new_macs"],
     ],
     "viewer": [
         ["request_access"],

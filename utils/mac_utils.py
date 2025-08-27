@@ -12,7 +12,7 @@ from utils.parser import extract_new_macs
 
 
 def safe_get_new_macs(
-    logger: Logger,  # type: ignore
+    logger: Logger,
     log_file: Path,
     processed_macs: Path,
     fresh_limit: float,
@@ -71,7 +71,7 @@ async def handle_mac_action(
     )
 
     if mac_list is None:
-        await message.answer(get_message("no_new_macs"))
+        await message.answer(get_message("no_file"))
         return
 
     if action == "show":

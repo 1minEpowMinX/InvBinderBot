@@ -152,5 +152,6 @@ async def reload_users_handler(
         return
     auth.reload()
     await assign_role_commands(message.bot, auth)  # type: ignore
+    logger.info(f"Admin {message.from_user.full_name} ({message.from_user.id}) reloaded users.")  # type: ignore
 
     await message.answer(get_message("users_update"))

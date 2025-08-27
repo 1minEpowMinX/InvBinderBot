@@ -5,6 +5,7 @@ from logging import Logger
 
 from keyboards.delete import delete_user_markup
 from lexicon.lexicon import get_message, get_menu_button
+from services.command import assign_role_commands
 from utils.auth_manager import AuthManager
 from utils.formatting import format_user_entry
 
@@ -141,5 +142,6 @@ async def reload_users_handler(message: Message, role: str, auth: AuthManager):
         await message.answer(get_message("no_access"))
         return
     auth.reload()
+    await assign_role_commands(message.bot, auth)  # type: ignore
 
     await message.answer(get_message("users_update"))

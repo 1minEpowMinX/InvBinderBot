@@ -12,7 +12,7 @@ router = Router()
 
 @router.callback_query(F.data.startswith("approve:"))
 async def approve_user_callback(
-    callback: CallbackQuery, role: str, auth: AuthManager, bot: Bot
+    callback: CallbackQuery, role: str, auth: AuthManager, bot: Bot, logger: Logger
 ):
     """
     Handles the callback for approving a user request.
@@ -22,12 +22,18 @@ async def approve_user_callback(
 
     Args:
         callback (CallbackQuery): The callback query object containing user interaction data.
+        role (str): The role of the user (should be 'admin' for this command).
+        bot (Bot): The bot instance to send messages.
+        logger (Logger): The logger instance for logging events.
     """
     admin_id = callback.from_user.id
     data = callback.data.split(":")  # type: ignore
     user_id = int(data[1])  # Retrieve user ID from callback data
 
     if role != "admin":
+        logger.warning(
+            f"User {callback.from_user.id} ({callback.from_user.full_name}) attempted to approve user without permission."  # type: ignore
+        )
         await callback.answer(get_message("no_access"), show_alert=True)
         return
 
@@ -44,7 +50,9 @@ async def approve_user_callback(
         added_by=admin_id,
         full_name=full_name,
         role="user",
-        notes=get_message("note").format(admin_username=callback.from_user.full_name, admin_id=admin_id),
+        notes=get_message("note").format(
+            admin_username=callback.from_user.full_name, admin_id=admin_id
+        ),
     ):
         await bot.edit_message_text(
             text=get_message("add_user").format(full_name=full_name, user_id=user_id),
@@ -104,6 +112,9 @@ async def delete_user_callback(
     """
     admin_id = callback.from_user.id
     if not auth.is_admin(admin_id):
+        logger.warning(
+            f"User {callback.from_user.id} ({callback.from_user.full_name}) attempted to delete user without permission."  # type: ignore
+        )
         await callback.answer(get_message("no_access"), show_alert=True)
         return
 

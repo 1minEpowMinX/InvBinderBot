@@ -44,7 +44,7 @@ async def approve_user_callback(
         added_by=admin_id,
         full_name=full_name,
         role="user",
-        notes=get_message("note").format(callback=callback.from_user.full_name, admin_id=admin_id),
+        notes=get_message("note").format(admin_username=callback.from_user.full_name, admin_id=admin_id),
     ):
         await bot.edit_message_text(
             text=get_message("add_user").format(full_name=full_name, user_id=user_id),

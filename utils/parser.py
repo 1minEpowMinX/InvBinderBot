@@ -14,7 +14,7 @@ def read_processed_macs(processed_macs_file: Path) -> set[str]:
 def extract_new_macs(
     log_file: Path, processed_macs_file: Path, fresh_minutes: float
 ) -> list[str]:
-    new_macs = []
+    new_macs = set()
     processed_macs = read_processed_macs(processed_macs_file)
 
     with open(log_file, "r", encoding="utf-8") as file:
@@ -38,6 +38,6 @@ def extract_new_macs(
                 continue
 
             if mac not in processed_macs:
-                new_macs.append(mac)
+                new_macs.add(mac)
 
-    return new_macs
+    return list(new_macs)

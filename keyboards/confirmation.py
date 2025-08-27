@@ -7,7 +7,11 @@ def get_one_time_keyboard(keyboard_text: list[str]) -> ReplyKeyboardMarkup:
 
     Args:
         keyboard_text (list[str]): A list of strings to be used as button texts in the keyboard.
+
+    Returns:
+        ReplyKeyboardMarkup: The one-time keyboard markup with the specified buttons.
     """
+
     if not keyboard_text:
         raise ValueError("keyboard_text must not be empty")
 

@@ -66,6 +66,9 @@ async def delete_user_command(
         logger (Logger): The logger instance for logging events.
     """
     if role != "admin":
+        logger.warning(
+            f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access delete user without permission."  # type: ignore
+        )
         await message.answer(get_message("no_access"))
         return
 
@@ -128,7 +131,9 @@ async def list_users_handler(
 
 
 @router.message(Command("reload_users"))
-async def reload_users_handler(message: Message, role: str, auth: AuthManager):
+async def reload_users_handler(
+    message: Message, role: str, auth: AuthManager, logger: Logger
+):
     """
     Reloads the list of users from the file.
     This command is restricted to admin users only.
@@ -137,8 +142,12 @@ async def reload_users_handler(message: Message, role: str, auth: AuthManager):
         message (Message): The incoming message that triggered the command.
         role (str): The role of the user (should be 'admin' for this command).
         auth (AuthManager): The authorization manager instance to handle user roles.
+        logger (Logger): The logger instance for logging events.
     """
     if role != "admin":
+        logger.warning(
+            f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access reload users without permission."  # type: ignore
+        )
         await message.answer(get_message("no_access"))
         return
     auth.reload()

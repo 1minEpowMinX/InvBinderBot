@@ -13,6 +13,7 @@ def access_request_markup(user_id: int) -> InlineKeyboardMarkup:
     Returns:
         InlineKeyboardMarkup: The inline keyboard markup with approval and denial buttons.
     """
+
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [

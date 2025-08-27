@@ -77,7 +77,7 @@ MESSAGES = {
     "needs_id_for_delete": "❗ Укажите ID пользователя: <code>/delete_user 123456789</code>",
     "user_deleted": "✅ Пользователь <code>{user_id}</code> успешно удалён.",
     "user_not_found": "❌ Пользователь <code>{user_id}</code> не найден.",
-    "note": "Добавлен администратором <code>{callback.from_user.full_name}</code> (<code>{admin_id}</code>)",
+    "note": "Добавлен администратором <code>{callback}</code> (<code>{admin_id}</code>)",
     "add_user": "✅ Пользователь <b>{full_name}</b> (<code>{user_id}</code>) был добавлен.",
     "approve_access": "🔓 Вам предоставлен доступ к боту. Приятного использования!",
     "user_already_exists": "❗ Пользователь <code>{user_id}</code> уже существует.",

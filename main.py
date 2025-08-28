@@ -48,7 +48,6 @@ async def main() -> None:
 
     # Register middlewares
     logger.info("Registering middlewares")
-
     dp.message.middleware(LoggingMiddleware(logger))
     dp.message.middleware(AuthMiddleware(auth_manager))
 
@@ -68,8 +67,9 @@ async def main() -> None:
     await assign_role_commands(bot, auth_manager)
 
     # Drops webhook if it exists and switches to getUpdates
-    # If there were updates while the bot was off, they will be processed
-    await bot.delete_webhook(drop_pending_updates=False)
+    # If there were updates while the bot was off, they will be skipped
+    logger.info("Starting polling")
+    await bot.delete_webhook(drop_pending_updates=True)
     # start polling with only allowed updates
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 

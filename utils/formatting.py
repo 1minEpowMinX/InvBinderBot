@@ -1,19 +1,24 @@
-from typing import Any
+from typing import Any, Optional
 
 
 def format_user_entry(
-    user_id: int, user: dict[str, Any], index: int | None = None
+    user_id: int, user: dict[str, Any], index: Optional[int] = None
 ) -> str:
     """
     Formats a user entry for display in a message.
+
+    This function creates a formatted string representing a user, including their full name,
+    user ID, role, and any notes. An optional index can be provided for numbering the entry.
 
     Args:
         user_id (int): The user's ID.
         user (dict[str, Any]): A dictionary containing user details.
         index (int | None): Optional index for numbering the user entry.
+
     Returns:
         str: Formatted user entry string.
     """
+
     name = user.get("full_name")
     role = user.get("role", "unknown")
     notes = user.get("notes", "заметок нет")

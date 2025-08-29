@@ -14,10 +14,17 @@ class AuthMiddleware(BaseMiddleware):
     It also provides a keyboard based on the user's role.
 
     Attributes:
-        auth (AuthManager): An instance of AuthManager to manage user roles and authorization.
+        auth (AuthManager): An instance of AuthManager for managing user roles and permissions.
     """
 
-    def __init__(self, auth: AuthManager):
+    def __init__(self, auth: AuthManager) -> None:
+        """
+        Initialize the AuthMiddleware with an AuthManager instance.
+
+        Args:
+            auth (AuthManager): An instance of AuthManager for managing user roles and permissions.
+        """
+
         self.auth = auth
 
     async def __call__(
@@ -26,6 +33,21 @@ class AuthMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: Dict[str, Any],
     ) -> Any:
+        """
+        Middleware call method.
+
+        This method checks the user's role and adds relevant data to the request context.
+        It also provides a keyboard based on the user's role.
+
+        Args:
+            handler (Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]]): The next handler in the middleware chain.
+            event (TelegramObject): The incoming Telegram event.
+            data (Dict[str, Any]): The data context for the request.
+
+        Returns:
+            Any: The result of the next handler in the middleware chain.
+        """
+
         user = data["event_from_user"]
         role = self.auth.get_role(user.id)
 

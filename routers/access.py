@@ -12,7 +12,7 @@ router = Router()
 @router.message(F.text == get_menu_button("request_access"))  # type: ignore
 async def request_access_handler(
     message: Message, auth: AuthManager, logger: Logger, bot
-):
+) -> None:
     """
     Handles the request for access to the bot by a user.
 
@@ -25,6 +25,7 @@ async def request_access_handler(
         logger (Logger): The logger instance for logging events.
         bot: The bot instance to send messages.
     """
+
     user = message.from_user  # type: ignore
     user_id = user.id  # type: ignore
     full_name = user.full_name  # type: ignore

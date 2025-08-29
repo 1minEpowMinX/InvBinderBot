@@ -7,6 +7,9 @@ def get_menu_by_role(role: str) -> ReplyKeyboardMarkup:
     """
     Returns a keyboard markup based on the user's role.
 
+    The keyboard layout is determined by the role provided, using predefined
+    templates and button labels.
+
     Args:
         role (str): User role (e.g., "admin", "user", "viewer").
 

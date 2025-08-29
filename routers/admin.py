@@ -15,10 +15,12 @@ router = Router()
 @router.message(F.text == get_menu_button("delete_user"))  # type: ignore
 async def delete_user_prompt(
     message: Message, role: str, auth: AuthManager, logger: Logger
-):
+) -> None:
     """
     Prompts the admin to delete a user.
-    This function lists all users and provides an option to delete them.
+
+    This function checks if the user has admin privileges, retrieves the list of users,
+    and sends a message with each user's details along with a delete button.
 
     Args:
         message (Message): The incoming message that triggered the command.
@@ -26,6 +28,7 @@ async def delete_user_prompt(
         role (str): The role of the user (should be 'admin' for this command).
         logger (Logger): The logger instance for logging events.
     """
+
     if role != "admin":
         logger.warning(
             f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access delete user without permission."  # type: ignore
@@ -53,10 +56,13 @@ async def delete_user_command(
     role: str,
     auth: AuthManager,
     logger: Logger,
-):
+) -> None:
     """
     Deletes a user by their ID.
-    This command is restricted to admin users only.
+
+    This function checks if the user has admin privileges, retrieves the list of users,
+    and sends a message with each user's details along with a delete button.
+    Also extends the delete functionality to previous function. Can delete admin too.
 
     Args:
         message (Message): The incoming message that triggered the command.
@@ -65,6 +71,7 @@ async def delete_user_command(
         auth (AuthManager): The authorization manager instance to handle user roles.
         logger (Logger): The logger instance for logging events.
     """
+
     if role != "admin":
         logger.warning(
             f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access delete user without permission."  # type: ignore
@@ -96,10 +103,12 @@ async def delete_user_command(
 @router.message(or_f(Command("user_list"), F.text == get_menu_button("user_list")))  # type: ignore
 async def list_users_handler(
     message: Message, role: str, auth: AuthManager, logger: Logger
-):
+) -> None:
     """
     Lists all registered users.
-    This command is restricted to admin users only.
+
+    This function checks if the user has admin privileges, retrieves the list of users,
+    and sends a formatted message containing each user's details.
 
     Args:
         message (Message): The incoming message that triggered the command.
@@ -107,6 +116,7 @@ async def list_users_handler(
         auth (AuthManager): The authorization manager instance to handle user roles.
         logger (Logger): The logger instance for logging events.
     """
+
     if role != "admin":
         logger.warning(
             f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access user list without permission."  # type: ignore
@@ -133,10 +143,12 @@ async def list_users_handler(
 @router.message(Command("reload_users"))
 async def reload_users_handler(
     message: Message, role: str, auth: AuthManager, logger: Logger
-):
+) -> None:
     """
     Reloads the list of users from the file.
-    This command is restricted to admin users only.
+
+    This function checks if the user has admin privileges, reloads the user data,
+    updates the bot commands based on user roles, and sends a confirmation message.
 
     Args:
         message (Message): The incoming message that triggered the command.
@@ -144,6 +156,7 @@ async def reload_users_handler(
         auth (AuthManager): The authorization manager instance to handle user roles.
         logger (Logger): The logger instance for logging events.
     """
+
     if role != "admin":
         logger.warning(
             f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access reload users without permission."  # type: ignore

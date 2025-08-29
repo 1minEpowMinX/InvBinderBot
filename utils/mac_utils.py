@@ -20,6 +20,9 @@ def safe_get_new_macs(
     """
     Safely retrieves new MAC addresses and count them for display.
 
+    This function attempts to extract new MAC addresses from the log file,
+    handling potential file not found errors gracefully.
+
     Args:
         logger (Logger): The logger instance for logging events.
         log_file (Path): Path to the log file containing MAC addresses.
@@ -29,6 +32,7 @@ def safe_get_new_macs(
     Returns:
         tuple[Optional[list[str]], int]: A tuple containing a list of new MAC addresses and a count.
     """
+
     try:
         mac_list = extract_new_macs(
             log_file, processed_macs, fresh_limit  # type: ignore
@@ -51,6 +55,9 @@ async def handle_mac_action(
     """
     Handles actions related to MAC addresses.
 
+    This function retrieves new MAC addresses and checks the action type. If the action is "show",
+    it sends a message with the count of new MACs. If the action is "bind", it sets the FSM state to wait for inventory number
+
     Args:
         message (Message): The incoming message that triggered the action.
         logger (Logger): The logger instance for logging events.
@@ -58,6 +65,7 @@ async def handle_mac_action(
         config_files (FilesConfig): An instance of FilesConfig containing file paths.
         state (FSMContext): The finite state machine context for managing user sessions.
     """
+
     user_id = message.from_user.id  # type: ignore
     mac_list, cnt = safe_get_new_macs(
         logger,
@@ -95,6 +103,8 @@ def save_macs_mapping(
     """
     Saves the MAC-to-inventory mapping to the specified CSV file.
 
+    This function appends the provided rows to an existing CSV file or creates a new file if it doesn't exist.
+
     Args:
         rows (Sequence[dict[str, str]]): List of {"MACAddress": ..., "ComputerName": ...} entries.
         file_path (Path): Path to the target CSV file.
@@ -103,6 +113,7 @@ def save_macs_mapping(
     Returns:
         bool: True if successful, False otherwise.
     """
+
     try:
         try:
             df_existing = read_csv(file_path)

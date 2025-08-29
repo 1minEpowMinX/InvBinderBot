@@ -6,16 +6,23 @@ from typing import Any, Awaitable, Callable, Dict
 
 class LoggingMiddleware(BaseMiddleware):
     """
-    Middleware for logging incoming messages and callback queries in a Telegram bot.
+    Middleware for logging incoming messages.
 
-    This middleware logs the user who sent the message or callback query,
-    along with the content of the message or callback data.
+    This middleware logs the user's full name, user ID, and the text of the incoming message.
+    It also adds the logger to the request context for further use in handlers.
 
     Attributes:
-        logger (Logger): An instance of Logger to log messages.
+        logger (Logger): An instance of Logger for logging messages.
     """
 
-    def __init__(self, logger: Logger):
+    def __init__(self, logger: Logger) -> None:
+        """
+        Initialize the LoggingMiddleware with a Logger instance.
+
+        Args:
+            logger (Logger): An instance of Logger for logging messages.
+        """
+
         self.logger = logger
 
     async def __call__(
@@ -24,6 +31,21 @@ class LoggingMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: Dict[str, Any],
     ) -> Any:
+        """
+        Middleware call method.
+
+        This method logs the user's full name, user ID, and the text of the incoming message.
+        It also adds the logger to the request context for further use in handlers.
+
+        Args:
+            handler (Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]]): The next handler in the middleware chain.
+            event (TelegramObject): The incoming Telegram event.
+            data (Dict[str, Any]): The data context for the request.
+
+        Returns:
+            Any: The result of the next handler in the middleware chain.
+        """
+
         user = data["event_from_user"]
         callback_data = getattr(event, "data", "")
         if callback_data:

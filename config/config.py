@@ -10,6 +10,9 @@ from aiogram.fsm.storage.redis import RedisStorage
 class TgBot:
     """
     Configuration for the Telegram bot.
+
+    Attributes:
+        token (str): The bot token provided by BotFather.
     """
 
     token: str
@@ -18,7 +21,13 @@ class TgBot:
 @dataclass
 class RedisConfig:
     """
-    Configuration for Redis.
+    Configuration for Redis to create a Redis client and a RedisStorage for FSM.
+
+    Attributes:
+        host (str): Redis server host.
+        port (int): Redis server port.
+        db (int): Redis database index.
+        password (Optional[str]): Redis server password.
     """
 
     host: str
@@ -28,8 +37,12 @@ class RedisConfig:
 
     def create_client(self) -> Redis:
         """
-        Create and return a Redis client instance.
+        Create and return a Redis client instance using the provided configuration.
+
+        Returns:
+            Redis: An instance of the Redis client.
         """
+
         return Redis(
             host=self.host,
             port=self.port,
@@ -39,15 +52,25 @@ class RedisConfig:
 
     def create_storage(self) -> RedisStorage:
         """
-        Create and return a RedisStorage instance.
+        Create and return a RedisStorage instance for FSM.
+
+        Returns:
+            RedisStorage: An instance of RedisStorage.
         """
+
         return RedisStorage(self.create_client())
 
 
 @dataclass
 class FilesConfig:
     """
-    Configuration for files.
+    Configuration for file paths and related settings.
+
+    Attributes:
+        log_file (Path): Path to the log file.
+        processed_macs (Path): Path to the processed MAC addresses file.
+        fresh_limit (float): Time limit in minutes to consider a MAC address as fresh.
+        name_template (str): Template for naming entries, with a placeholder for dynamic content.
     """
 
     log_file: Path
@@ -59,7 +82,12 @@ class FilesConfig:
 @dataclass
 class Config:
     """
-    Configuration for the bot.
+    Main configuration class that aggregates all other configurations.
+
+    Attributes:
+        tg_bot (TgBot): Configuration for the Telegram bot.
+        redis (RedisConfig): Configuration for Redis.
+        files (FilesConfig): Configuration for file paths and related settings.
     """
 
     tg_bot: TgBot
@@ -69,13 +97,13 @@ class Config:
 
 def load_config(path: Optional[Path] = None) -> Config:
     """
-    Load configuration from .env file or environment variables.
+    Load configuration from environment variables or a .env file.
 
     Args:
         path (Optional[Path]): Path to the .env file. Defaults to None, which uses the current directory.
 
     Returns:
-        Config: The loaded configuration object.
+        Config: The loaded configuration object. Includes bot, Redis, and file configurations.
     """
 
     env = Env()

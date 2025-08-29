@@ -7,33 +7,33 @@ from typing import Optional
 class AuthManager:
     """
     A class to manage authorized users and their roles in the bot.
-    It provides methods to load, save, check authorization, and manage users.
 
-    Public Attributes:
-        path (Path): The path to the JSON file where authorized users are stored.
+    This class provides methods to load, save, add, remove, and check users and their roles.
 
-    Private Attributes:
-        _users (dict[int, dict]): A dictionary where keys are user IDs and values are dictionaries with user details.
+    Attributes:
+        path (Path): Public attribute to store the path to the JSON file where authorized users are stored.
+        _users (dict[int, dict]): Private attribute to store the authorized users in memory.
     """
 
-    def __init__(self, path: Path = Path("authorized_users.json")):
+    def __init__(self, path: Path = Path("authorized_users.json")) -> None:
         """
         Initialize the AuthManager with the path to the JSON file.
 
         Args:
-            path (Path): The path to the JSON file where authorized users are stored.
-                        Defaults to "authorized_users.json".
+            path (Path): The path to the JSON file where authorized users are stored. Defaults to "authorized_users.json".
         """
+
         self.path = path
         self._users = self._load()
 
     def _load(self) -> dict[int, dict]:
         """
-        Load authorized users from the JSON file.
+        Load authorized users from the JSON file into memory if the file exists.
 
         Returns:
             dict[int, dict]: A dictionary where keys are user IDs and values are dictionaries with user details.
         """
+
         if self.path.exists():
             with open(self.path, "r", encoding="utf-8") as f:
                 raw = json.load(f)
@@ -44,10 +44,8 @@ class AuthManager:
     def _save(self) -> None:
         """
         Save the current state of authorized users to the JSON file.
-
-        Returns:
-            None
         """
+
         with open(self.path, "w", encoding="utf-8") as f:
             json.dump(
                 {"users": list(self._users.values())}, f, ensure_ascii=False, indent=2
@@ -55,6 +53,7 @@ class AuthManager:
 
     def reload(self) -> None:
         """Reload the users list from the JSON file."""
+
         self._users = self._load()
 
     def is_authorized(self, user_id: int) -> bool:
@@ -67,6 +66,7 @@ class AuthManager:
         Returns:
             bool: True if the user is authorized, False otherwise.
         """
+
         return user_id in self._users
 
     def is_admin(self, user_id: int) -> bool:
@@ -79,6 +79,7 @@ class AuthManager:
         Returns:
             bool: True if the user is an admin, False otherwise.
         """
+
         return self._users.get(user_id, {}).get("role") == "admin"
 
     def add_user(
@@ -91,6 +92,8 @@ class AuthManager:
     ) -> bool:
         """
         Add a new user to the authorized users list.
+
+        This method adds a user with the specified details if the user does not already exist.
 
         Args:
             user_id (int): The ID of the user to add.
@@ -120,7 +123,7 @@ class AuthManager:
 
     def remove_user(self, user_id: int) -> bool:
         """
-        Remove a user from the authorized users list.
+        Remove a user from the authorized users list if they exist.
 
         Args:
             user_id (int): The ID of the user to remove.
@@ -128,6 +131,7 @@ class AuthManager:
         Returns:
             bool: True if the user was removed successfully, False if the user does not exist.
         """
+
         if user_id in self._users:
             del self._users[user_id]
             self._save()
@@ -141,6 +145,7 @@ class AuthManager:
         Returns:
             dict[int, dict]: A dictionary where keys are user IDs and values are dictionaries with user details.
         """
+
         return self._users
 
     def get_role(self, user_id: int) -> str:
@@ -153,4 +158,5 @@ class AuthManager:
         Returns:
             str: The role of the user, or "viewer" if the user is not found.
         """
+
         return self._users.get(user_id, {}).get("role", "viewer")

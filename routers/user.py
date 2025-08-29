@@ -24,14 +24,15 @@ async def start_mac_binding(
     """
     Initiates the binding process of inventory numbers to MAC addresses.
 
-    This function sets the state to waiting for inventory numbers and updates the context with the MAC list.
+    This function sets the initial state for binding, prompts the user to send MAC addresses.
 
     Args:
         message (Message): The incoming message that triggered the binding command.
         state (FSMContext): The finite state machine context for managing user sessions.
         logger (Logger): The logger instance for logging events.
-        files_config (FilesConfig): An instance of FilesConfig containing file paths.
+        config_files (FilesConfig): An instance of FilesConfig containing file paths.
     """
+
     await handle_mac_action(
         message, logger, action="bind", state=state, config_files=config_files
     )
@@ -44,13 +45,14 @@ async def show_new_macs(
     """
     Handles the command to show new MAC addresses.
 
-    This function retrieves new MAC addresses from the log file and sends them to the user.
+    This function retrieves and displays new MAC addresses that have not yet been processed.
 
     Args:
         message (Message): The incoming message that triggered the command.
         logger (Logger): The logger instance for logging events.
         config_files (FilesConfig): An instance of FilesConfig containing file paths.
     """
+
     await handle_mac_action(message, logger, action="show", config_files=config_files)
 
 
@@ -61,7 +63,7 @@ async def handle_inventory_reply(
     state: FSMContext,
     logger: Logger,
     config_files: FilesConfig,
-):
+) -> None:
     """
     Handles the user's reply containing inventory numbers.
 
@@ -77,6 +79,7 @@ async def handle_inventory_reply(
         config_files (FilesConfig): An instance of FilesConfig containing file paths.
 
     """
+
     data = await state.get_data()
     user_id = message.from_user.id  # type: ignore
     if user_id != data["user_id"]:
@@ -147,18 +150,20 @@ async def confirm_save(
     state: FSMContext,
     logger: Logger,
     config_files: FilesConfig,
-):
+) -> None:
     """
     Confirms the saving of inventory numbers and MAC addresses.
 
     This function retrieves the pending rows from the state, saves them to the processed MACs file,
     and clears the state.
+
     Args:
         message (Message): The incoming message confirming the save action.
         state (FSMContext): The finite state machine context for managing user sessions.
         logger (Logger): The logger instance for logging events.
         config_files (FilesConfig): An instance of FilesConfig containing file paths.
     """
+
     data = await state.get_data()
     pending_rows = data.get("pending_rows", [])
 
@@ -176,7 +181,7 @@ async def confirm_save(
 @router.message(F.text == get_button("cancel_save"))  # type: ignore
 async def cancel_binding(
     message: Message, role: str, state: FSMContext, logger: Logger
-):
+) -> None:
     """
     Cancels the binding process of inventory numbers to MAC addresses.
 
@@ -187,6 +192,7 @@ async def cancel_binding(
         state (FSMContext): The finite state machine context for managing user sessions.
         logger (Logger): The logger instance for logging events.
     """
+
     await state.clear()
     logger.info(
         f"User {message.from_user.full_name} ({message.from_user.id}) canceled the binding duplicated inventory numbers process"  # type: ignore

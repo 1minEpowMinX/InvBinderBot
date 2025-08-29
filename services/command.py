@@ -5,14 +5,18 @@ from lexicon.lexicon import get_command_desc
 from utils.auth_manager import AuthManager
 
 
-async def assign_role_commands(bot: Bot, auth: AuthManager):
+async def assign_role_commands(bot: Bot, auth: AuthManager) -> None:
     """
     Sets role-based commands for each user based on their role.
+
+    The function iterates through all users, retrieves their roles,
+    and assigns a set of commands appropriate for their permissions.
 
     Args:
         bot (Bot): The bot instance to set commands for.
         auth (AuthManager): The authorization manager to control user roles.
     """
+
     for user_id in auth.get_list_users().keys():
         role = auth.get_role(user_id)
         commands = [BotCommand(command="start", description=get_command_desc("start"))]

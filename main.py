@@ -23,7 +23,9 @@ logger = setup_logger()
 
 
 async def main() -> None:
-    """Main function to configure and start the bot."""
+    """
+    Main function to configure and start the bot.
+    """
 
     logger.info("Starting bot")
     config: Config = load_config()

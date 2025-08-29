@@ -18,6 +18,9 @@ jobs:
       packages: write
     
     steps:
+      - name: downcase REPO
+        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
+
       - name: Set up Docker Buildx # Normally included checkout repo step
         uses: docker/setup-buildx-action@v3
 
@@ -32,4 +35,4 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository }} | tr '[:upper:]' '[:lower:]')/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.REPO }}:latest

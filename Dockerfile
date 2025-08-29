@@ -28,7 +28,7 @@ COPY main.py .
 
 # Make sure the entrypoint script is executable
 COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # Set the entrypoint to the script
 ENTRYPOINT ["/entrypoint.sh"]

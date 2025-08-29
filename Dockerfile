@@ -26,5 +26,9 @@ COPY services/ /app/services/
 COPY utils/ /app/utils/
 COPY main.py .
 
-# Entry point to run the application
-CMD ["python", "main.py"]
+# Make sure the entrypoint script is executable
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Set the entrypoint to the script
+ENTRYPOINT ["/entrypoint.sh"]

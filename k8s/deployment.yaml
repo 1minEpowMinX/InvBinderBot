@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: invbinderbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: invbinderbot
+  template:
+    metadata:
+      labels:
+        app: invbinderbot
+    spec:
+      containers:
+        - name: invbinderbot
+          image: ghcr.io/1minepowminx/invbinderbot:latest
+          imagePullSecrets:
+            - name: ghcr-secret
+          envFrom:
+            - configMapRef:
+                name: bot-config
+            - secretRef:
+                name: bot-secrets
+          volumeMounts:
+            - name: users-json
+              mountPath: /app/config/authorized_users.json
+              subPath: users.json
+            - name: corp-cert
+              mountPath: /usr/local/share/ca-certificates/corp.crt
+              subPath: corp.crt
+      volumes:
+        - name: users-json
+          configMap:
+            name: bot-users
+        - name: corp-cert
+          configMap:
+            name: bot-certs

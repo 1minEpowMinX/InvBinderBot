@@ -7,7 +7,7 @@ if [ -f /usr/local/share/ca-certificates/corp.crt ]; then
 fi
 
 # export environment variables from .env file if it exists
-if [ -f /app/config/.env ]; then
+if [ -f /app/.env ]; then
     export $(grep -v '^#' /app/.env | xargs)
 fi
 

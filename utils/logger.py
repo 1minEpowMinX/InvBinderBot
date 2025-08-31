@@ -16,7 +16,7 @@ def setup_logger() -> Logger:
     fileHandler = FileHandler("InvBinderBot.log", mode="a", encoding="utf-8")
     streamHandler = StreamHandler(stdout)  # Log to console for kubernetes
 
-    basicConfig(
+    basicConfig(  # Can implement RotatingFileHandler in the future if needed
         level=INFO,
         format="%(filename)s:%(lineno)d #%(levelname)-8s "
         "[%(asctime)s] - %(name)s - %(message)s",

@@ -12,23 +12,26 @@ spec:
       labels:
         app: invbinderbot
     spec:
+      # imagePullSecrets:
+      #   - name: ghcr-secret
       containers:
         - name: invbinderbot
           image: ghcr.io/1minepowminx/invbinderbot:latest
-          imagePullSecrets:
-            - name: ghcr-secret
           envFrom:
             - configMapRef:
-                name: bot-config
+                name: env-bot-config
             - secretRef:
                 name: bot-secrets
           volumeMounts:
             - name: users-json
-              mountPath: /app/config/authorized_users.json
-              subPath: users.json
+              mountPath: /app/authorized_users.json
+              subPath: authorized_users.json
             - name: corp-cert
               mountPath: /usr/local/share/ca-certificates/corp.crt
               subPath: corp.crt
+            - name: bot-pvc-logs
+              mountPath: InvBinderBot.log
+              subPath: InvBinderBot.log
       volumes:
         - name: users-json
           configMap:
@@ -36,3 +39,6 @@ spec:
         - name: corp-cert
           configMap:
             name: bot-certs
+        - name: bot-pvc-logs
+          persistentVolumeClaim:
+            claimName: bot-pvc-logs

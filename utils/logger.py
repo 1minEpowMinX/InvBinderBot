@@ -1,22 +1,28 @@
-from logging import basicConfig, getLogger, INFO, Logger
+from logging import basicConfig, getLogger, INFO, Logger, StreamHandler, FileHandler
+from sys import stdout
 
 
 def setup_logger() -> Logger:
     """
     Sets up the logging configuration for the application.
 
+    This function configures the logging system to log messages to a file and the console.
+    Console logging is particularly useful for environments like Kubernetes.
+
     Returns:
         Logger: Configured logger instance.
     """
 
+    fileHandler = FileHandler("InvBinderBot.log", mode="a", encoding="utf-8")
+    streamHandler = StreamHandler(stdout)  # Log to console for kubernetes
+
     basicConfig(
-        filename="InvBinderBot.log",
-        filemode="a",  # Append mode
-        encoding="utf-8",
         level=INFO,
         format="%(filename)s:%(lineno)d #%(levelname)-8s "
         "[%(asctime)s] - %(name)s - %(message)s",
+        handlers=[fileHandler, streamHandler],
     )
+
     logger = getLogger(__name__)
     logger.info("Logging is set up")
 

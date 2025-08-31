@@ -1,10 +1,8 @@
 #!/bin/bash
 set -e
 
-# update CA certificates if custom certificate is provided
-if [ -f /usr/local/share/ca-certificates/corp.crt ]; then
-    update-ca-certificates
-fi
+# update CA certificates in case custom certs are added
+update-ca-certificates
 
 # export environment variables from .env file if it exists
 if [ -f /app/.env ]; then

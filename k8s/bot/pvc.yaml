@@ -1,0 +1,10 @@
+apiVersion: 1
+kind: PersistentVolumeClaim
+metadata:
+  name: bot-pvc-logs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

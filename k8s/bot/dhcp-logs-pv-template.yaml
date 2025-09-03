@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dhcp-logs-pv
+spec:
+  capacity:
+    storage: 512Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain # Prevent data loss
+  storageClassName: smb
+  mountOptions:
+    - noperm # Disable permission checks on client side
+    - vers=3.1 # SMB protocol version
+    - cache=strict # Disable caching
+    - noserverino # Disable inode numbers. Required to prevent data corruption
+  csi:
+    driver: smb.csi.k8s.io
+    volumeHandle: "dhcp-logs-volume"
+    volumeAttributes:
+      source: "//your-smb-server/shared-folder"
+    nodeStageSecretRef:
+      name: smb-secrets
+      namespace: default

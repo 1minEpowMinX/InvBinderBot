@@ -40,21 +40,28 @@ spec:
             # data storage for bot (like authorized_users.json)
             - name: bot-pvc
               mountPath: /app/data
-            - name: bot-pvc
-              # logs storage for bot (log file)
-              mountPath: /app/logs
             - name: corp-cert
               mountPath: /app/certs
+            - name: dhcp-logs-pvc
+              mountPath: /app/dhcp-logs
+            - name: macs-pvc
+              mountPath: /app/csv
       volumes:
-        - name: bot-pvc
-          persistentVolumeClaim:
-            claimName: bot-pvc
-        - name: corp-cert
-          configMap:
-            name: bot-certs
         - name: bot-users-init
           configMap:
             name: bot-users-init
             items:
-              - key: authorized_users.json
+              - key: authorized_users.json # specify the key to mount
                 path: authorized_users.json
+        - name: corp-cert
+          configMap:
+            name: bot-certs
+        - name: bot-pvc
+          persistentVolumeClaim:
+            claimName: bot-pvc
+        - name: dhcp-logs-pvc
+          persistentVolumeClaim:
+            claimName: dhcp-logs-pvc
+        - name: macs-pvc
+          persistentVolumeClaim:
+            claimName: macs-pvc

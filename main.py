@@ -26,7 +26,7 @@ async def main() -> None:
 
     # Initialize logger and auth manager
     auth_manager = AuthManager()
-    logger = setup_logger(Path("InvBinderBot.log"))
+    logger = setup_logger(Path("app/InvBinderBot.log"))
 
     logger.info("Starting bot")
     config: Config = load_config()

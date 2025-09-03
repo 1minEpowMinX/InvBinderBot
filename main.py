@@ -2,6 +2,7 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from pathlib import Path
 
 from config.config import Config, load_config
 from middlewares.authorization_middleware import AuthMiddleware
@@ -17,15 +18,15 @@ from services.command import assign_role_commands
 from utils.auth_manager import AuthManager
 from utils.logger import setup_logger
 
-# Initialize logger and auth manager
-auth_manager = AuthManager()
-logger = setup_logger()
-
 
 async def main() -> None:
     """
     Main function to configure and start the bot.
     """
+
+    # Initialize logger and auth manager
+    auth_manager = AuthManager()
+    logger = setup_logger(Path("InvBinderBot.log"))
 
     logger.info("Starting bot")
     config: Config = load_config()

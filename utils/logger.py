@@ -1,19 +1,26 @@
 from logging import basicConfig, getLogger, INFO, Logger, StreamHandler, FileHandler
+from pathlib import Path
 from sys import stdout
 
 
-def setup_logger() -> Logger:
+def setup_logger(path: Path) -> Logger:
     """
     Sets up the logging configuration for the application.
 
     This function configures the logging system to log messages to a file and the console.
     Console logging is particularly useful for environments like Kubernetes.
 
+    Args:
+        path (Path): The path where the log file will be stored.
+
     Returns:
         Logger: Configured logger instance.
     """
 
-    fileHandler = FileHandler("InvBinderBot.log", mode="a", encoding="utf-8")
+    if not path.parent.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+    fileHandler = FileHandler(path, mode="a", encoding="utf-8")
     streamHandler = StreamHandler(stdout)  # Log to console for kubernetes
 
     basicConfig(  # Can implement RotatingFileHandler in the future if needed

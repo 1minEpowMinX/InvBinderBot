@@ -15,7 +15,7 @@ spec:
     - cache=strict # Disable caching
     - noserverino # Disable inode numbers. Required to prevent data corruption
   csi:
-    driver: smb.csi.k8s.io
+    driver: smb.csi.k8s.io # Use the SMB CSI driver. Source: https://github.com/kubernetes-csi/csi-driver-smb
     volumeHandle: "dhcp-logs-volume"
     volumeAttributes:
       source: "//your-smb-server/shared-folder"

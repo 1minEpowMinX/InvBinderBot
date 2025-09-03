@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: bot-users
+  name: bot-users-init
 data:
   authorized_users.json: |
     {

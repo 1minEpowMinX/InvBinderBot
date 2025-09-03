@@ -12,8 +12,22 @@ spec:
       labels:
         app: invbinderbot
     spec:
-      # imagePullSecrets:
-      #   - name: ghcr-secret
+      initContainers:
+        - name: init-users
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              # if the authorized_users.json file does not exist in the PVC, copy the default one from the ConfigMap
+              if [ ! -f app/data/authorized_users.json ]; then
+                cp /init/authorized_users.json app/data/authorized_users.json
+              fi
+          volumeMounts:
+            - name: bot-users-init
+              mountPath: /init
+            - name: bot-pvc
+              mountPath: app/data
       containers:
         - name: invbinderbot
           image: ghcr.io/1minepowminx/invbinderbot:latest
@@ -23,22 +37,24 @@ spec:
             - secretRef:
                 name: bot-secrets
           volumeMounts:
-            - name: users-json
-              mountPath: /app/authorized_users.json
-              subPath: authorized_users.json
+            # data storage for bot (like authorized_users.json)
+            - name: bot-pvc
+              mountPath: /app/data
+            - name: bot-pvc
+              # logs storage for bot (log file)
+              mountPath: /app/logs
             - name: corp-cert
-              mountPath: /usr/local/share/ca-certificates/corp.crt
-              subPath: corp.crt
-            - name: bot-pvc-logs
-              mountPath: InvBinderBot.log
-              subPath: InvBinderBot.log
+              mountPath: /app/certs
       volumes:
-        - name: users-json
-          configMap:
-            name: bot-users
+        - name: bot-pvc
+          persistentVolumeClaim:
+            claimName: bot-pvc
         - name: corp-cert
           configMap:
             name: bot-certs
-        - name: bot-pvc-logs
-          persistentVolumeClaim:
-            claimName: bot-pvc-logs
+        - name: bot-users-init
+          configMap:
+            name: bot-users-init
+            items:
+              - key: authorized_users.json
+                path: authorized_users.json

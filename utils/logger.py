@@ -3,7 +3,7 @@ from pathlib import Path
 from sys import stdout
 
 
-def setup_logger(path: Path) -> Logger:
+def setup_logger(path: Path = Path("InvBinderBot.log")) -> Logger:
     """
     Sets up the logging configuration for the application.
 

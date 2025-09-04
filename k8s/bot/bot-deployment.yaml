@@ -56,6 +56,9 @@ spec:
         - name: corp-cert
           configMap:
             name: bot-certs
+            items:
+              - key: corp.crt # specify the key to mount
+                path: corp.crt
         - name: bot-pvc
           persistentVolumeClaim:
             claimName: bot-pvc

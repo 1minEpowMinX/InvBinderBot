@@ -1,23 +1,18 @@
 #!/bin/bash
 set -e
 
-# Add corporate CA to system trust store
+# Check and install corporate certificate if it exists
 if [ -f /app/certs/corp.crt ]; then
-    csplit -sz /app/certs/corp.crt '/-----BEGIN CERTIFICATE-----/' '{*}'
-    for cert in xx*; do
-        mv "$cert" /usr/local/share/ca-certificates/
-    done
+    cp /app/certs/corp.crt /usr/local/share/ca-certificates/corp.crt
     update-ca-certificates
 
-    # Add to Python certifi bundle
-    cat /usr/local/share/ca-certificates/*.crt >> $(python -m certifi)
+    # Append the corporate certificate to certifi's bundle
+    cat /usr/local/share/ca-certificates/corp.crt >> $(python -m certifi)
+
     export REQUESTS_CA_BUNDLE=/usr/local/share/ca-certificates/corp.crt
+    export CURL_CA_BUNDLE=/usr/local/share/ca-certificates/corp.crt
+else
+    echo "Warning: /app/certs/corp.crt not found, skipping certificate installation"
 fi
 
-# Export .env variables
-if [ -f /app/.env ]; then
-    export $(grep -v '^#' /app/.env | xargs)
-fi
-
-# Run main application
 exec python /app/main.py

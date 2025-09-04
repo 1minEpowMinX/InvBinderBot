@@ -1,24 +1,23 @@
 #!/bin/bash
 set -e
 
-# If corporate CA certificate exists, add it to the system's trusted certificates
+# Add corporate CA to system trust store
 if [ -f /app/certs/corp.crt ]; then
-    # split the corp.crt file into individual certificate files
     csplit -sz /app/certs/corp.crt '/-----BEGIN CERTIFICATE-----/' '{*}'
-
-    # move the split certificate files to the system's CA directory
     for cert in xx*; do
         mv "$cert" /usr/local/share/ca-certificates/
     done
-
-    # update the system's trusted certificates
     update-ca-certificates
+
+    # Add to Python certifi bundle
+    cat /usr/local/share/ca-certificates/*.crt >> $(python -m certifi)
+    export REQUESTS_CA_BUNDLE=/usr/local/share/ca-certificates/corp.crt
 fi
 
-# export environment variables from .env file if it exists
+# Export .env variables
 if [ -f /app/.env ]; then
     export $(grep -v '^#' /app/.env | xargs)
 fi
 
-# run the main application
+# Run main application
 exec python /app/main.py

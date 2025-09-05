@@ -13,6 +13,8 @@ from lexicon.lexicon import get_message, get_button, get_menu_button
 from utils.mac_utils import handle_mac_action, save_macs_mapping
 from utils.validation import validate_inv_format
 
+# TODO: Review MACs processing logic for efficiency and reliability. Consider migration to a microservice architecture:
+# Go Backend MACs processor and Python Frontend.
 
 router = Router()
 

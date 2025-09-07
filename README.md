@@ -6,9 +6,10 @@
   <a href="https://github.com/1minEpowMinX/InvBinderBot/blob/dev/LICENSE" target="_blank">
     <img alt="GitHub License" src="https://img.shields.io/github/license/1minEpowMinX/InvBinderBot">
   </a>
+  <a href="https://dependabot.com/" target="_blank">
+    <img alt="Dependabot" src="https://badgen.net/badge/Dependabot/enabled/green?icon=dependabot">
+  </a>
 </p>
-
-[![Dependabot](https://badgen.net/badge/Dependabot/enabled/green?icon=dependabot)](https://dependabot.com/)
 
 > Telegram bot for automating work with MAC addresses and unique device names. Used in corporate infrastructure to simplify administration, including through integration with Kubernetes.
 

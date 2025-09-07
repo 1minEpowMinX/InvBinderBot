@@ -26,7 +26,7 @@
 
 ## 🛠️ Built With
 
-![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=yellow)
+![Python](https://img.shields.io/badge/Python-3.13-blue?logo=python&logoColor=yellow)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-326ce5?logo=kubernetes&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ed?logo=docker&logoColor=white)

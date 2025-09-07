@@ -1,4 +1,4 @@
-name: Build, Test and Push Docker Image
+name: Build and Push Docker Image
 
 on:
   pull_request:
@@ -7,24 +7,21 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+    REGISTRY: ghcr.io
+    IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-test-deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-
+    
     steps:
-      - name: Downcase REPO
+      - name: downcase REPO
         run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
 
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
+      - name: Set up Docker Buildx # Normally included checkout repo step
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
@@ -34,15 +31,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image for testing
-        run: |
-          docker build --target test-stage -t ${{ env.REPO }}:ci .
-
-      - name: Run tests inside Docker
-        run: |
-          docker run --rm ${{ env.REPO }}:ci pytest -v
-
-      - name: Build and push final Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           push: true

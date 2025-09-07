@@ -12,7 +12,7 @@ hiredis==3.2.1
 idna==3.10
 magic-filter==1.0.12
 marshmallow==4.0.0
-multidict==6.6.3
+multidict==6.6.4
 numpy==2.3.1
 pandas==2.3.1
 pandas-stubs==2.3.0.250703

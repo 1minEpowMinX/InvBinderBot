@@ -18,7 +18,7 @@ pandas==2.3.1
 pandas-stubs==2.3.0.250703
 propcache==0.3.2
 pydantic==2.11.7
-pydantic_core==2.33.2
+pydantic_core==2.39.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 pytz==2025.2

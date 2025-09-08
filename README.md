@@ -48,7 +48,7 @@ Before starting, you need to configure the environment:
 
 📝 Note: To work through Kubernetes, you need to do the same for Secrets and ConfigMaps files.
 
-## Usage
+## 🚀 Usage
 
 ### Local
 
@@ -65,7 +65,7 @@ kubectl apply -f k8s/redis/
 
 📝 Note: In some deployments (e.g., corporate infrastructure), additional services such as Samba shares may be used. These are optional and not required for running the bot itself.
 
-## Author
+## 📘 Author
 
 👤 **Kirill Bitskyi**
 

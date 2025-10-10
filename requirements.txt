@@ -1,5 +1,5 @@
 aiogram==3.22.0
-aiofiles==24.1.0
+aiofiles==25.1.0
 environs==14.3.0
 marshmallow==4.0.1
 numpy==2.3.1

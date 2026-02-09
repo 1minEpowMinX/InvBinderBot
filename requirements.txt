@@ -3,7 +3,7 @@ aiofiles==25.1.0
 environs==14.4.0
 marshmallow==4.2.2
 numpy==2.3.4
-pandas==2.3.3
+pandas==3.0.0
 redis==7.0.1
 pydantic==2.12.3
 python-dotenv==1.2.1

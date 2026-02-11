@@ -18,7 +18,6 @@ def format_user_entry(
     Returns:
         str: Formatted user entry string.
     """
-
     name = user.get("full_name")
     role = user.get("role", "unknown")
     notes = user.get("notes", "заметок нет")

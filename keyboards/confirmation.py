@@ -16,7 +16,6 @@ def get_one_time_keyboard(keyboard_text: list[str]) -> ReplyKeyboardMarkup:
     Returns:
         ReplyKeyboardMarkup: The one-time keyboard markup with the specified buttons.
     """
-
     if not keyboard_text:
         raise ValueError("keyboard_text must not be empty")
 

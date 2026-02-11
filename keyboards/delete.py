@@ -16,7 +16,6 @@ def delete_user_markup(user_id: int) -> InlineKeyboardMarkup:
     Returns:
         InlineKeyboardMarkup: The inline keyboard markup with a delete button.
     """
-
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [

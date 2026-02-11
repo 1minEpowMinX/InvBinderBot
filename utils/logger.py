@@ -16,7 +16,6 @@ def setup_logger(path: Path = Path("InvBinderBot.log")) -> Logger:
     Returns:
         Logger: Configured logger instance.
     """
-
     if not path.parent.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
 

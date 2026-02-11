@@ -22,7 +22,6 @@ class LoggingMiddleware(BaseMiddleware):
         Args:
             logger (Logger): An instance of Logger for logging messages.
         """
-
         self.logger = logger
 
     async def __call__(
@@ -45,7 +44,6 @@ class LoggingMiddleware(BaseMiddleware):
         Returns:
             Any: The result of the next handler in the middleware chain.
         """
-
         user = data["event_from_user"]
         callback_data = getattr(event, "data", "")
         if callback_data:

@@ -5,7 +5,6 @@ from logging import Logger
 
 from keyboards.delete import delete_user_markup
 from lexicon.lexicon import get_message, get_menu_button
-from services.command import assign_role_commands
 from utils.auth_manager import AuthManager
 from utils.formatting import format_user_entry
 
@@ -28,7 +27,6 @@ async def delete_user_prompt(
         role (str): The role of the user (should be 'admin' for this command).
         logger (Logger): The logger instance for logging events.
     """
-
     if role != "admin":
         logger.warning(
             f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access delete user without permission."  # type: ignore
@@ -36,7 +34,7 @@ async def delete_user_prompt(
         await message.answer(get_message("no_access"))
         return
 
-    users = auth.get_list_users()
+    users = await auth.get_list_users()
     if not users:
         await message.answer(get_message("empty_users"))
         return
@@ -71,7 +69,6 @@ async def delete_user_command(
         auth (AuthManager): The authorization manager instance to handle user roles.
         logger (Logger): The logger instance for logging events.
     """
-
     if role != "admin":
         logger.warning(
             f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access delete user without permission."  # type: ignore
@@ -89,7 +86,7 @@ async def delete_user_command(
 
     user_id = int(arg)
 
-    if auth.remove_user(user_id):
+    if await auth.remove_user(user_id):
         await message.answer(
             get_message("user_deleted").format(user_id=user_id), parse_mode="HTML"
         )
@@ -116,7 +113,6 @@ async def list_users_handler(
         auth (AuthManager): The authorization manager instance to handle user roles.
         logger (Logger): The logger instance for logging events.
     """
-
     if role != "admin":
         logger.warning(
             f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access user list without permission."  # type: ignore
@@ -124,7 +120,7 @@ async def list_users_handler(
         await message.answer(get_message("no_access"))
         return
 
-    users = auth.get_list_users()
+    users = await auth.get_list_users()
     if not users:
         logger.info("No registered users found.")
         await message.answer(get_message("empty_users"))
@@ -138,33 +134,3 @@ async def list_users_handler(
     )
 
     await message.answer(result, parse_mode="HTML")
-
-
-@router.message(Command("reload_users"))
-async def reload_users_handler(
-    message: Message, role: str, auth: AuthManager, logger: Logger
-) -> None:
-    """
-    Reloads the list of users from the file.
-
-    This function checks if the user has admin privileges, reloads the user data,
-    updates the bot commands based on user roles, and sends a confirmation message.
-
-    Args:
-        message (Message): The incoming message that triggered the command.
-        role (str): The role of the user (should be 'admin' for this command).
-        auth (AuthManager): The authorization manager instance to handle user roles.
-        logger (Logger): The logger instance for logging events.
-    """
-
-    if role != "admin":
-        logger.warning(
-            f"User {message.from_user.id} ({message.from_user.full_name}) attempted to access reload users without permission."  # type: ignore
-        )
-        await message.answer(get_message("no_access"))
-        return
-    auth.reload()
-    await assign_role_commands(message.bot, auth)  # type: ignore
-    logger.info(f"Admin {message.from_user.full_name} ({message.from_user.id}) reloaded users.")  # type: ignore
-
-    await message.answer(get_message("users_update"))

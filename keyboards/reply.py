@@ -16,7 +16,6 @@ def get_menu_by_role(role: str) -> ReplyKeyboardMarkup:
     Returns:
         ReplyKeyboardMarkup: Keyboard markup for the specified role.
     """
-
     role_layout = MENU_TEMPLATE.get(role, [])
     button_labels = BUTTONS["buttons"]
 

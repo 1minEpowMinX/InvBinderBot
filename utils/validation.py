@@ -21,7 +21,6 @@ def is_valid_inv_name(inv: str) -> bool:
     Returns:
         bool: True if the inventory number is valid, False otherwise.
     """
-
     return bool(INV_PATTERN.fullmatch(inv))
 
 
@@ -42,7 +41,6 @@ async def validate_inv_format(
     Returns:
             Optional[bool]: True if all inventory numbers are valid, False if any are invalid, None if the list is empty.
     """
-
     invalid_invs = [inv for inv in inv_lines if not is_valid_inv_name(inv)]
     if invalid_invs:
         logger.warning(

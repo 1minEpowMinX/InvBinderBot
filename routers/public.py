@@ -23,7 +23,6 @@ async def start_handler(
         role (str): The role of the user.
         keyboard (ReplyKeyboardMarkup): The keyboard markup for the menu.
     """
-
     await message.answer(get_message(role), reply_markup=keyboard)
 
 
@@ -42,5 +41,4 @@ async def help_handler(
         role (str): The role of the user.
         keyboard (ReplyKeyboardMarkup): The keyboard markup for the menu.
     """
-
     await message.answer(get_message(f"{role}_help"), reply_markup=keyboard)

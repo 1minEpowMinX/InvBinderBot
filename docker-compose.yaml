@@ -1,0 +1,31 @@
+name: invbinderbot
+
+services:
+  redis:
+    image: redis:latest
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - ./data/redis:/app/data/redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  bot:
+    image: ghcr.io/1minepowminx/invbinderbot:latest
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./data/logs:/app/data/logs
+      - ./certs:/app/certs:ro # need to use in copr env if has self-signed chain
+    restart: always
+
+volumes:
+  redis-data:
+    driver: local
+  bot-data:
+    driver: local

@@ -5,7 +5,7 @@ from aiogram.types import Message
 from logging import Logger
 from pandas import DataFrame, read_csv
 
-from config.config import FilesConfig
+from config.config import MacBindingConfig
 from fsm.binding import BindingInventory
 from keyboards.confirmation import get_one_time_keyboard
 from keyboards.reply import get_menu_by_role
@@ -21,7 +21,7 @@ router = Router()
 
 @router.message(or_f(Command("bind_inv_to_mac"), F.text == get_menu_button("bind_inv_to_mac")))  # type: ignore
 async def start_mac_binding(
-    message: Message, state: FSMContext, logger: Logger, config_files: FilesConfig
+    message: Message, state: FSMContext, logger: Logger, mac_binding: MacBindingConfig
 ) -> None:
     """
     Initiates the binding process of inventory numbers to MAC addresses.
@@ -32,17 +32,16 @@ async def start_mac_binding(
         message (Message): The incoming message that triggered the binding command.
         state (FSMContext): The finite state machine context for managing user sessions.
         logger (Logger): The logger instance for logging events.
-        config_files (FilesConfig): An instance of FilesConfig containing file paths.
+        mac_binding (MacBindingConfig): Configuration for MAC binding, file paths, and related parameters.
     """
-
     await handle_mac_action(
-        message, logger, action="bind", state=state, config_files=config_files
+        message, logger, action="bind", state=state, mac_binding=mac_binding
     )
 
 
 @router.message(or_f(Command("show_new_macs"), F.text == get_menu_button("show_new_macs")))  # type: ignore
 async def show_new_macs(
-    message: Message, logger: Logger, config_files: FilesConfig
+    message: Message, logger: Logger, mac_binding: MacBindingConfig
 ) -> None:
     """
     Handles the command to show new MAC addresses.
@@ -52,10 +51,9 @@ async def show_new_macs(
     Args:
         message (Message): The incoming message that triggered the command.
         logger (Logger): The logger instance for logging events.
-        config_files (FilesConfig): An instance of FilesConfig containing file paths.
+        mac_binding (MacBindingConfig): Configuration for MAC binding, file paths, and related parameters.
     """
-
-    await handle_mac_action(message, logger, action="show", config_files=config_files)
+    await handle_mac_action(message, logger, action="show", mac_binding=mac_binding)
 
 
 @router.message(BindingInventory.waiting_for_inventory_numbers)
@@ -64,7 +62,7 @@ async def handle_inventory_reply(
     role: str,
     state: FSMContext,
     logger: Logger,
-    config_files: FilesConfig,
+    mac_binding: MacBindingConfig,
 ) -> None:
     """
     Handles the user's reply containing inventory numbers.
@@ -78,10 +76,8 @@ async def handle_inventory_reply(
         role (str): The role of the user, used for determining access permissions.
         state (FSMContext): The finite state machine context for managing user sessions.
         logger (Logger): The logger instance for logging events.
-        config_files (FilesConfig): An instance of FilesConfig containing file paths.
-
+        mac_binding (MacBindingConfig): Configuration for MAC binding, file paths, and related parameters.
     """
-
     data = await state.get_data()
     user_id = message.from_user.id  # type: ignore
     if user_id != data["user_id"]:
@@ -108,14 +104,16 @@ async def handle_inventory_reply(
 
     df_existing = DataFrame()
     try:
-        df_existing = read_csv(config_files.processed_macs)
+        df_existing = read_csv(mac_binding.bound_computers_csv)
     except FileNotFoundError:
-        logger.error(f"Processed MACs file {config_files.processed_macs} not found.")
+        logger.error(
+            f"Processed MACs file {mac_binding.bound_computers_csv} not found."
+        )
 
     duplicates: list[str] = []
     rows: list[dict[str, str]] = []
     for mac, inv in zip(mac_list, inv_lines):
-        inv = config_files.name_template + inv.strip()
+        inv = mac_binding.name_template + inv.strip()
         rows.append({"MACAddress": mac, "ComputerName": inv})
         if not df_existing.empty and inv in df_existing["ComputerName"].values:
             duplicates.append(inv)
@@ -138,7 +136,7 @@ async def handle_inventory_reply(
             reply_markup=get_one_time_keyboard(text),
         )
     else:
-        if save_macs_mapping(rows, config_files.processed_macs, logger):
+        if save_macs_mapping(rows, mac_binding.bound_computers_csv, logger):
             await state.clear()
             await message.answer(get_message("save_success"), reply_markup=get_menu_by_role(role))  # type: ignore
         else:
@@ -151,7 +149,7 @@ async def confirm_save(
     role: str,
     state: FSMContext,
     logger: Logger,
-    config_files: FilesConfig,
+    mac_binding: MacBindingConfig,
 ) -> None:
     """
     Confirms the saving of inventory numbers and MAC addresses.
@@ -163,9 +161,8 @@ async def confirm_save(
         message (Message): The incoming message confirming the save action.
         state (FSMContext): The finite state machine context for managing user sessions.
         logger (Logger): The logger instance for logging events.
-        config_files (FilesConfig): An instance of FilesConfig containing file paths.
+        mac_binding (MacBindingConfig): Configuration for MAC binding, file paths, and related parameters.
     """
-
     data = await state.get_data()
     pending_rows = data.get("pending_rows", [])
 
@@ -173,7 +170,7 @@ async def confirm_save(
         f"User {message.from_user.full_name} ({message.from_user.id}) confirmed saving duplicated inventory numbers."  # type: ignore
     )
 
-    if save_macs_mapping(pending_rows, config_files.processed_macs, logger):
+    if save_macs_mapping(pending_rows, mac_binding.bound_computers_csv, logger):
         await state.clear()
         await message.answer(get_message("save_success"), reply_markup=get_menu_by_role(role))  # type: ignore
     else:
@@ -194,7 +191,6 @@ async def cancel_binding(
         state (FSMContext): The finite state machine context for managing user sessions.
         logger (Logger): The logger instance for logging events.
     """
-
     await state.clear()
     logger.info(
         f"User {message.from_user.full_name} ({message.from_user.id}) canceled the binding duplicated inventory numbers process"  # type: ignore

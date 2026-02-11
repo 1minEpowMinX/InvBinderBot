@@ -5,16 +5,16 @@ from pathlib import Path
 from pandas import DataFrame, concat, read_csv
 from typing import Optional, Sequence
 
-from config.config import FilesConfig
+from config.config import MacBindingConfig
 from fsm.binding import BindingInventory
 from lexicon.lexicon import get_message
 from utils.parser import extract_new_macs
 
 
-def safe_get_new_macs(
+def get_safe_new_macs(
     logger: Logger,
     log_file: Path,
-    processed_macs: Path,
+    bound_computers_csv: Path,
     fresh_limit: float,
 ) -> tuple[Optional[list[str]], int]:
     """
@@ -26,21 +26,20 @@ def safe_get_new_macs(
     Args:
         logger (Logger): The logger instance for logging events.
         log_file (Path): Path to the log file containing MAC addresses.
-        processed_macs (Path): Path to the file containing already processed MAC addresses.
+        bound_computers_csv (Path): Path to the CSV file containing MAC addresses already bound to computers.
         fresh_limit (float): The freshness limit in minutes.
 
     Returns:
         tuple[Optional[list[str]], int]: A tuple containing a list of new MAC addresses and a count.
     """
-
     try:
         mac_list = extract_new_macs(
-            log_file, processed_macs, fresh_limit  # type: ignore
+            log_file, bound_computers_csv, fresh_limit  # type: ignore
         )
         return mac_list, len(mac_list)
     except FileNotFoundError:
         logger.error(
-            f"One of the required files not found: {log_file} or {processed_macs}."
+            f"One of the required files not found: {log_file} or {bound_computers_csv}."
         )
         return None, 0
 
@@ -49,7 +48,7 @@ async def handle_mac_action(
     message: Message,
     logger: Logger,
     action: str,
-    config_files: FilesConfig,
+    mac_binding: MacBindingConfig,
     state: FSMContext = None,  # type: ignore
 ) -> None:
     """
@@ -62,20 +61,15 @@ async def handle_mac_action(
         message (Message): The incoming message that triggered the action.
         logger (Logger): The logger instance for logging events.
         action (str): The action to be performed (e.g., "show" or "bind").
-        config_files (FilesConfig): An instance of FilesConfig containing file paths.
+        mac_binding (MacBindingConfig): Configuration for MAC binding, file paths, and related parameters.
         state (FSMContext): The finite state machine context for managing user sessions.
     """
-
     user_id = message.from_user.id  # type: ignore
-    mac_list, cnt = safe_get_new_macs(
+    mac_list, cnt = get_safe_new_macs(
         logger,
-        config_files.log_file,
-        config_files.processed_macs,
-        config_files.fresh_limit,
-    )
-
-    logger.info(
-        f"User {message.from_user.full_name} ({user_id}) triggered MAC action: {action}."  # type: ignore
+        mac_binding.dhcp_log,
+        mac_binding.bound_computers_csv,
+        mac_binding.fresh_limit,
     )
 
     if mac_list is None:
@@ -97,7 +91,7 @@ async def handle_mac_action(
 
 def save_macs_mapping(
     rows: Sequence[dict[str, str]],
-    file_path: Path,
+    bound_computers_csv: Path,
     logger: Logger,
 ) -> bool:
     """
@@ -107,22 +101,22 @@ def save_macs_mapping(
 
     Args:
         rows (Sequence[dict[str, str]]): List of {"MACAddress": ..., "ComputerName": ...} entries.
-        file_path (Path): Path to the target CSV file.
+        bound_computers_csv (Path): Path to the CSV file with already bound MAC addresses
         logger (Logger): Logger for logging events.
 
     Returns:
         bool: True if successful, False otherwise.
     """
-
     try:
         try:
-            df_existing = read_csv(file_path)
+            df_existing = read_csv(bound_computers_csv)
         except FileNotFoundError:
             df_existing = DataFrame()
 
         df_result = concat([df_existing, DataFrame(rows)], ignore_index=True)
-        df_result.to_csv(file_path, index=False)
-        logger.info(f"Saved {len(rows)} MAC-to-inventory rows to {file_path}")
+        df_result.to_csv(bound_computers_csv, index=False)
+
+        logger.info(f"Saved {len(rows)} MAC-to-inventory rows to {bound_computers_csv}")
         return True
     except Exception as e:
         logger.exception(f"Failed to save MAC mappings: {e}")

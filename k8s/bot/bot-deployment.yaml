@@ -12,22 +12,6 @@ spec:
       labels:
         app: invbinderbot
     spec:
-      initContainers:
-        - name: init-users
-          image: busybox:latest
-          command:
-            - sh
-            - -c
-            - |
-              # if the authorized_users.json file does not exist or empty in the PVC, copy the default one from the ConfigMap
-              if [ ! -s /app/data/authorized_users.json ]; then
-                cp -n /init/authorized_users.json /app/data/authorized_users.json # dont overwritte exesting files
-              fi
-          volumeMounts:
-            - name: bot-users-init
-              mountPath: /init
-            - name: bot-pvc
-              mountPath: app/data
       containers:
         - name: invbinderbot
           image: ghcr.io/1minepowminx/invbinderbot:latest
@@ -37,7 +21,6 @@ spec:
             - secretRef:
                 name: bot-secrets
           volumeMounts:
-            # data storage for bot (like authorized_users.json)
             - name: bot-pvc
               mountPath: /app/data
             - name: corp-cert
@@ -47,12 +30,6 @@ spec:
             - name: macs-pvc
               mountPath: /app/csv
       volumes:
-        - name: bot-users-init
-          configMap:
-            name: bot-users-init
-            items:
-              - key: authorized_users.json # specify the key to mount
-                path: authorized_users.json
         - name: corp-cert
           configMap:
             name: bot-certs

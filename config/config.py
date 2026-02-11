@@ -42,7 +42,6 @@ class RedisConfig:
         Returns:
             Redis: An instance of the Redis client.
         """
-
         return Redis(
             host=self.host,
             port=self.port,
@@ -57,24 +56,26 @@ class RedisConfig:
         Returns:
             RedisStorage: An instance of RedisStorage.
         """
-
         return RedisStorage(self.create_client())
 
 
 @dataclass
-class FilesConfig:
+class MacBindingConfig:
     """
-    Configuration for file paths and related settings.
+    Configuration for MAC binding, including file paths
+    and parameters related to processing fresh MAC addresses.
 
     Attributes:
-        log_file (Path): Path to the log file.
-        processed_macs (Path): Path to the processed MAC addresses file.
-        fresh_limit (float): Time limit in minutes to consider a MAC address as fresh.
-        name_template (str): Template for naming entries, with a placeholder for dynamic content.
+        bot_log (Path): Path to the bot log file.
+        dhcp_log (Path): Path to the DHCP log file.
+        bound_computers_csv (Path): Path to the CSV file with already bound MAC addresses.
+        fresh_limit (float): Time limit in minutes to consider a MAC address as "fresh".
+        name_template (str): Name template for generating entries.
     """
 
-    log_file: Path
-    processed_macs: Path
+    bot_log: Path
+    dhcp_log: Path
+    bound_computers_csv: Path
     fresh_limit: float
     name_template: str
 
@@ -87,12 +88,12 @@ class Config:
     Attributes:
         tg_bot (TgBot): Configuration for the Telegram bot.
         redis (RedisConfig): Configuration for Redis.
-        files (FilesConfig): Configuration for file paths and related settings.
+        mac_binding (MacBindingConfig): Configuration for MAC binding, file paths, and related parameters.
     """
 
     tg_bot: TgBot
     redis: RedisConfig
-    files: FilesConfig
+    mac_binding: MacBindingConfig
 
 
 def load_config(path: Optional[Path] = None) -> Config:
@@ -105,7 +106,6 @@ def load_config(path: Optional[Path] = None) -> Config:
     Returns:
         Config: The loaded configuration object. Includes bot, Redis, and file configurations.
     """
-
     env = Env()
     env.read_env(path)
 
@@ -117,10 +117,13 @@ def load_config(path: Optional[Path] = None) -> Config:
             db=env.int("REDIS_DB", 0),
             password=env.str("REDIS_PASSWORD", None),
         ),
-        files=FilesConfig(
-            log_file=Path(env.str("LOG_FILE", "dhcp.log")),
-            processed_macs=Path(env.str("PROCESSED_MACS", "processed_macs.csv")),
+        mac_binding=MacBindingConfig(
+            bot_log=Path(env.str("BOT_LOG", "InvBinderBot.log")),
+            dhcp_log=Path(env.str("DHCP_LOG", "dhcp.log")),
+            bound_computers_csv=Path(
+                env.str("BOUND_COMPUTERS_CSV", "bound_computers.csv")
+            ),
             fresh_limit=float(env.str("FRESH_LIMIT_MINUTES", "5")),
-            name_template=env.str("NAME_TEMPLATE", "{}"),
+            name_template=env.str("NAME_TEMPLATE", "name_template"),
         ),
     )

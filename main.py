@@ -2,7 +2,6 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from pathlib import Path
 
 from config.config import Config, load_config
 from middlewares.authorization_middleware import AuthMiddleware
@@ -23,19 +22,19 @@ async def main() -> None:
     """
     Main function to configure and start the bot.
     """
+    config: Config = load_config()
 
-    # Initialize logger and auth manager
-    auth_manager = AuthManager(Path("./data/authorized_users.json"))
-    logger = setup_logger(Path("./data/InvBinderBot.log"))
+    logger = setup_logger(config.mac_binding.bot_log)
 
     logger.info("Starting bot")
-    config: Config = load_config()
 
     logger.info("Loading Redis storage")
     storage = config.redis.create_storage()
     redis = storage.redis
 
-    if await redis.ping():
+    auth_manager = AuthManager(redis)
+
+    if await redis.ping():  # type: ignore
         logger.info("Redis storage is connected successfully")
     else:
         logger.error("Failed to connect to Redis storage")
@@ -47,7 +46,7 @@ async def main() -> None:
     )
 
     logger.info("Initializing Dispatcher")
-    dp = Dispatcher(storage=storage, config_files=config.files)
+    dp = Dispatcher(storage=storage, mac_binding=config.mac_binding)
 
     # Register middlewares
     logger.info("Registering middlewares")
@@ -71,7 +70,6 @@ async def main() -> None:
 
     # Drops webhook if it exists and switches to getUpdates
     # If there were updates while the bot was off, they will be skipped
-    logger.info("Starting polling")
     await bot.delete_webhook(drop_pending_updates=True)
     # start polling with only allowed updates
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())

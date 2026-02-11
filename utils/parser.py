@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 
-def read_processed_macs(processed_macs_file: Path) -> set[str]:
+def read_bound_computers(bound_computers_csv: Path) -> set[str]:
     """
     Reads the processed MAC addresses from a CSV file.
 
@@ -11,41 +11,40 @@ def read_processed_macs(processed_macs_file: Path) -> set[str]:
     returning a set of MAC addresses. If the file cannot be read, it returns an empty set.
 
     Args:
-        processed_macs_file (Path): Path to the CSV file containing processed MAC addresses.
+        bound_computers_csv (Path): Path to the CSV file containing MAC addresses already bound to computers.
 
     Returns:
         set[str]: A set of processed MAC addresses.
     """
-
     try:
-        macs = pd.read_csv(processed_macs_file)
+        macs = pd.read_csv(bound_computers_csv)
         return set(macs["MACAddress"].tolist())
     except Exception:
         return set()
 
 
 def extract_new_macs(
-    log_file: Path, processed_macs_file: Path, fresh_minutes: float
+    log_file: Path, bound_computers_csv: Path, fresh_minutes: float
 ) -> list[str]:
     """
-    Extracts new MAC addresses from a log file that are not in the processed MACs file
+    Extracts new MAC addresses from a DHCP log file that are not in the bound computers CSV
     and are within the freshness limit.
 
     This function reads the log file line by line, looking for lines containing "DHCPDISCOVER".
     It extracts the timestamp and MAC address from each relevant line, checks if the MAC address
-    is in the processed MACs file and is within the freshness limit, and if so, adds it to the list of new MACs.
+    is already bound to a computer and is within the freshness limit, and if so, adds it to
+    the list of new MACs.
 
     Args:
-        log_file (Path): _description_
-        processed_macs_file (Path): _description_
-        fresh_minutes (float): _description_
+        log_file (Path): Path to the DHCP log file containing network discovery entries.
+        bound_computers_csv (Path): Path to the CSV file containing MAC addresses already bound to computers.
+        fresh_minutes (float): Time limit in minutes to consider a MAC address as fresh (recently discovered).
 
     Returns:
-            list[str]: _description_
+        list[str]: A list of new MAC addresses found within the freshness limit that are not yet bound to computers.
     """
-
     new_macs = set()
-    processed_macs = read_processed_macs(processed_macs_file)
+    bound_computers = read_bound_computers(bound_computers_csv)
 
     with open(log_file, "r", encoding="utf-8") as file:
         for line in file:
@@ -67,7 +66,7 @@ def extract_new_macs(
             if (datetime.now() - log_time) > timedelta(minutes=fresh_minutes):
                 continue
 
-            if mac not in processed_macs:
+            if mac not in bound_computers:
                 new_macs.add(mac)
 
     return list(new_macs)

@@ -4,9 +4,10 @@ metadata:
   name: env-bot-config
 data:
   FRESH_LIMIT_MINUTES: "30"
-  NAME_TEMPLATE: "Your Name Template Here"
-  LOG_FILE: "/app/logs/logfile.log"
-  PROCESSED_MACS: "/app/config/processed_macs.csv"
+  NAME_TEMPLATE: "name_template"
+  BOT_LOG: "/app/data/InvBinderBot.log"
+  DHCP_LOG: "/app/dhcp-logs/dhcp.log"
+  BOUND_COMPUTERS_CSV: "/app/csv/bound_computers.csv"
   REDIS_HOST: "redis"
   REDIS_PORT: "6379"
   REDIS_DB: "0"

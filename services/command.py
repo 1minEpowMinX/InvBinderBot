@@ -16,14 +16,17 @@ async def assign_role_commands(bot: Bot, auth: AuthManager) -> None:
         bot (Bot): The bot instance to set commands for.
         auth (AuthManager): The authorization manager to control user roles.
     """
-
-    for user_id in auth.get_list_users().keys():
-        role = auth.get_role(user_id)
-        commands = [BotCommand(command="start", description=get_command_desc("start"))]
+    for user_id in (await auth.get_list_users()).keys():
+        # Delete any existing commands for the user to ensure they receive the correct set of commands based on their current role
+        await bot.delete_my_commands(scope=BotCommandScopeChat(chat_id=user_id))
+        role = await auth.get_role(user_id)
+        commands = [
+            BotCommand(command="start", description=get_command_desc("start")),
+            BotCommand(command="help", description=get_command_desc("help")),
+        ]
 
         if role != "viewer":
             commands += [
-                BotCommand(command="help", description=get_command_desc("help")),
                 BotCommand(
                     command="bind_inv_to_mac",
                     description=get_command_desc("bind_inv_to_mac"),
@@ -41,9 +44,6 @@ async def assign_role_commands(bot: Bot, auth: AuthManager) -> None:
                 ),
                 BotCommand(
                     command="user_list", description=get_command_desc("user_list")
-                ),
-                BotCommand(
-                    command="reload_users", description=get_command_desc("reload_users")
                 ),
             ]
 

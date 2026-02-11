@@ -26,7 +26,6 @@ async def approve_user_callback(
         bot (Bot): The bot instance to send messages.
         logger (Logger): The logger instance for logging events.
     """
-
     admin_id = callback.from_user.id
     data = callback.data.split(":")  # type: ignore
     user_id = int(data[1])  # Retrieve user ID from callback data
@@ -46,7 +45,7 @@ async def approve_user_callback(
         full_name = get_message("unknown_user")  # Fallback if user not found
 
     # Add user and check if the user already exists in the auth system
-    if auth.add_user(
+    if await auth.add_user(
         user_id,
         added_by=admin_id,
         full_name=full_name,
@@ -84,7 +83,6 @@ async def deny_user_callback(callback: CallbackQuery, bot: Bot) -> None:
         callback (CallbackQuery): The callback query object containing user interaction data.
         bot (Bot): The bot instance to send messages.
     """
-
     user_id = int(callback.data.split(":")[1])  # type: ignore
     await bot.edit_message_text(
         text=get_message("admin_request_denied"),
@@ -113,9 +111,8 @@ async def delete_user_callback(
         logger (Logger): The logger instance for logging events.
         bot (Bot): The bot instance to send messages.
     """
-
     admin_id = callback.from_user.id
-    if not auth.is_admin(admin_id):
+    if not await auth.is_admin(admin_id):
         logger.warning(
             f"User {callback.from_user.id} ({callback.from_user.full_name}) attempted to delete user without permission."  # type: ignore
         )
@@ -124,21 +121,17 @@ async def delete_user_callback(
 
     user_id = int(callback.data.split(":")[1])  # type: ignore
 
-    # Check if the admin is trying to delete themselves and if they are the only admin
-    if (
-        user_id == admin_id
-        and sum(
-            1 for uid in auth.get_list_users().keys() if auth.get_role(uid) == "admin"
+    # Check if the admin is trying to delete themselves and if he is the only admin
+    if user_id == admin_id:
+        users = await auth.get_list_users()
+        admin_count = sum(
+            1 for uid in users.keys() if users[uid].get("role") == "admin"
         )
-        == 1
-    ):
-        await callback.answer(
-            get_message("only_admin"),
-            show_alert=True,
-        )
-        return
+        if admin_count < 2:
+            await callback.answer(get_message("only_admin"), show_alert=True)
+            return
 
-    if auth.remove_user(user_id):
+    if await auth.remove_user(user_id):
         await bot.edit_message_text(
             text=get_message("user_deleted").format(user_id=user_id),
             chat_id=callback.message.chat.id,  # type: ignore

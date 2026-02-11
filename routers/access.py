@@ -25,7 +25,6 @@ async def request_access_handler(
         logger (Logger): The logger instance for logging events.
         bot: The bot instance to send messages.
     """
-
     user = message.from_user  # type: ignore
     user_id = user.id  # type: ignore
     full_name = user.full_name  # type: ignore
@@ -33,7 +32,9 @@ async def request_access_handler(
     logger.info(f"User {full_name} ({user_id}) requested access to the bot.")
 
     admin_ids = [
-        uid for uid in auth.get_list_users().keys() if auth.get_role(uid) == "admin"
+        uid
+        for uid in (await auth.get_list_users()).keys()
+        if await auth.get_role(uid) == "admin"
     ]
 
     if not admin_ids:

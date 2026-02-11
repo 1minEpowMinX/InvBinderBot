@@ -24,7 +24,6 @@ class AuthMiddleware(BaseMiddleware):
         Args:
             auth (AuthManager): An instance of AuthManager for managing user roles and permissions.
         """
-
         self.auth = auth
 
     async def __call__(
@@ -47,9 +46,8 @@ class AuthMiddleware(BaseMiddleware):
         Returns:
             Any: The result of the next handler in the middleware chain.
         """
-
         user = data["event_from_user"]
-        role = self.auth.get_role(user.id)
+        role = await self.auth.get_role(user.id)
 
         data["logger"].info(f"User {user.full_name} ({user.id}) has role: {role}")
 

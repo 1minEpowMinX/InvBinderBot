@@ -8,6 +8,3 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: local-storage
-  volumeMode: Filesystem
-  volumeName: bot-pv # Bind to the specific PV created earlier

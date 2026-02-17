@@ -4,8 +4,10 @@ services:
   redis:
     image: redis:latest
     command: ["redis-server", "--appendonly", "yes"]
+    environment:
+      TZ: ${TIMEZONE}
     volumes:
-      - ./data/redis:/app/data/redis
+      - ./data/redis:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -16,16 +18,29 @@ services:
     image: ghcr.io/1minepowminx/invbinderbot:latest
     env_file:
       - .env
+    environment:
+      TZ: ${TIMEZONE}
     depends_on:
       redis:
         condition: service_healthy
     volumes:
       - ./data/logs:/app/data/logs
       - ./certs:/app/certs:ro # need to use in copr env if has self-signed chain
+      - smb-dhcp:/mnt/dhcp
+      - smb-data:/mnt/csv
     restart: always
 
 volumes:
-  redis-data:
+  smb-dhcp:
     driver: local
-  bot-data:
+    driver_opts:
+      type: cifs
+      device: "${SMB_SHARE_DHCP}"
+      o: "username=${SMB_USER},password=${SMB_PASS},domain=${SMB_DOMAIN},rw,noserverino"
+
+  smb-data:
     driver: local
+    driver_opts:
+      type: cifs
+      device: "${SMB_SHARE_CSV}"
+      o: "username=${SMB_USER},password=${SMB_PASS},domain=${SMB_DOMAIN},rw,noserverino"

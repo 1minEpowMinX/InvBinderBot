@@ -3,11 +3,13 @@ kind: ConfigMap
 metadata:
   name: env-bot-config
 data:
-  FRESH_LIMIT_MINUTES: "30"
+  CORP_ROOT_CA_PATH: "/path/to/corp_root_ca.crt"
+  BOT_LOG: "/path/to/your/InvBinderBot.log"
+  DHCP_LOG: "/path/to/your/dhcp.log"
+  BOUND_COMPUTERS_CSV: "/path/to/bound_computers.csv"
+  FRESH_LIMIT_MINUTES: "fresh_limit_in_minutes"
   NAME_TEMPLATE: "name_template"
-  BOT_LOG: "/app/data/InvBinderBot.log"
-  DHCP_LOG: "/app/dhcp-logs/dhcp.log"
-  BOUND_COMPUTERS_CSV: "/app/csv/bound_computers.csv"
-  REDIS_HOST: "redis"
+  REDIS_HOST: "redis_host"
   REDIS_PORT: "6379"
-  REDIS_DB: "0"
+  REDIS_DB: "redis_db_index"
+  TIMEZONE: "Your/Timezone"

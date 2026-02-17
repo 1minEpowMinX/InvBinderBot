@@ -15,6 +15,13 @@ spec:
       containers:
         - name: invbinderbot
           image: ghcr.io/1minepowminx/invbinderbot:latest
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
           envFrom:
             - configMapRef:
                 name: env-bot-config
@@ -34,8 +41,8 @@ spec:
           configMap:
             name: bot-certs
             items:
-              - key: corp.crt # specify the key to mount
-                path: corp.crt
+              - key: corp_root_ca.crt # specify the key to mount
+                path: corp_root_ca.crt # specify the path in the container
         - name: bot-pvc
           persistentVolumeClaim:
             claimName: bot-pvc

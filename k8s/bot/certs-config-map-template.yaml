@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: bot-certs
 data:
-  corp.crt: |
+  corp_root_ca.crt: |
     -----BEGIN CERTIFICATE-----
-    your_certificate_chain_data_here
+    your_corporate_root_ca_certificate_here
     -----END CERTIFICATE-----

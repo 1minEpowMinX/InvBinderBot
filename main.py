@@ -1,21 +1,18 @@
 import asyncio
+
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 
 from config.config import Config, load_config
 from middlewares.authorization_middleware import AuthMiddleware
 from middlewares.logging_middleware import LoggingMiddleware
-from routers import (
-    access,
-    admin,
-    callbacks,
-    public,
-    user,
-)
+from routers import access, admin, callbacks, public, user
 from services.command import assign_role_commands
 from utils.auth_manager import AuthManager
 from utils.logger import setup_logger
+from utils.ssl_helper import create_ssl_context
 
 
 async def main() -> None:
@@ -40,9 +37,15 @@ async def main() -> None:
         logger.error("Failed to connect to Redis storage")
         exit(1)
 
+    logger.info("Creating a custom SSL context for the bot")
+    ssl_ctx = create_ssl_context()
+    session = AiohttpSession()
+    session._connector_init = {"ssl": ssl_ctx}  # type: ignore
+
     bot = Bot(
         token=config.tg_bot.token,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+        session=session,
     )
 
     logger.info("Initializing Dispatcher")

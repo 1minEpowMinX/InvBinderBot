@@ -1,7 +1,7 @@
 aiogram==3.26.0
 aiofiles==25.1.0
 environs==14.6.0
-marshmallow==4.2.2
+marshmallow==4.2.4
 numpy==2.4.3
 pandas==3.0.1
 redis==7.3.0

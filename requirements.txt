@@ -5,5 +5,5 @@ marshmallow==4.2.2
 numpy==2.4.3
 pandas==3.0.1
 redis==7.3.0
-pydantic==2.12.5
+pydantic==2.13.4
 python-dotenv==1.2.2

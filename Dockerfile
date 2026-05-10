@@ -1,4 +1,4 @@
-FROM python:3.14.3-slim
+FROM python:3.15.0b1-slim
 
 # Update the package list and install any necessary dependencies
 RUN apt-get update \

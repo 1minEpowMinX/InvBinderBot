@@ -2,7 +2,7 @@ aiogram==3.26.0
 aiofiles==25.1.0
 environs==14.6.0
 marshmallow==4.2.2
-numpy==2.4.3
+numpy==2.5.0
 pandas==3.0.1
 redis==7.3.0
 pydantic==2.12.5
